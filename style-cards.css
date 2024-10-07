@@ -1,0 +1,148 @@
+
+body {
+  background-color: darkcyan;
+  display: absolute;
+  gap : 20px;
+  padding: 20px;
+}
+
+
+h4 {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-size: 2rem;
+}
+
+p {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 1rem;
+}
+
+button.card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  border-radius: 8px;
+  margin-left: 40px;
+  margin-right: 40px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #6bff6b, #000dff);
+  background-size: 100% 100%;
+  transition: background-size 1s ease-in-out;
+}
+
+.card:hover {
+  background-size:200% 200%;
+}
+
+.card-container {
+  display: grid;
+  align-self: center;
+  padding: 4px;
+}
+
+/* button.card:nth-child(1) {
+  grid-column: 2 / 5;
+  grid-row: 1;
+}
+
+button.card:nth-child(2) {
+  grid-column: 2 / 5;
+  grid-row: 2;
+}
+
+button.card:nth-child(3) {
+  grid-column: 2 / 5;
+  grid-row: 3;
+} */
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display : block;
+  margin : auto;
+}
+
+.hamburger {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.hamburger div {
+  grid-column: 1;
+  grid-row: 1;
+  width: 25px;
+  height: 3px;
+  background-color: rgb(0, 0, 0);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.menu-icon {
+  grid-column: 1;
+  grid-row: 1;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 10px;
+  user-select: none;
+}
+
+.nav-menu {
+  display: none;
+  flex-direction: column;
+  background-color: rgb(28, 221, 221);
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  width: 25%;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu a {
+  padding: 10px;
+  text-decoration: none;
+  color: rgb(88, 32, 136);
+  font-family: 'Times New Roman', Times, serif;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-menu a:hover {
+  background-color: rgb(88, 32, 136);
+  color: white;
+}
+
+.nav-menu a:last-child {
+  border-bottom: none;
+}
+
+.hamburger.active div:nth-child(1) {
+  width: 200%;
+}
+
+.hamburger.active div:nth-child(2) {
+  width: 200%;
+}
+
+.hamburger.active div:nth-child(3) {
+  width: 200%;
+}
+
+#menu-toggle:checked + .menu-icon + .nav-menu {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+}
