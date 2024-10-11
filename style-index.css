@@ -63,12 +63,7 @@ footer {
     align-items: center;
     background-color: #52c5a2;
     position: relative; 
-    margin: 0 -200px;
-    margin-bottom: -200px;
-    padding: 0 200px;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    margin-bottom: -50px;
     
 }
 
