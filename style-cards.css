@@ -41,6 +41,14 @@ button.card {
   padding: 4px;
 }
 
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
 .card img {
   max-width: 100%;
   height: auto;
