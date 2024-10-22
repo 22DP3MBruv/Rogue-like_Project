@@ -57,13 +57,16 @@ section p {
 }
 
 footer {
+    
     display: flex;
     gap: 20px;
     justify-content: center;
     align-items: center;
     background-color: #52c5a2;
-    position: relative; 
-    margin-bottom: -50px;
+    position: relative;
+    left: -9%;
+    bottom: -9%;
+    width: 119%;
     
 }
 
