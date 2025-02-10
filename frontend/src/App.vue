@@ -64,7 +64,9 @@
   
         <section class="game-section">
           <h2>Game</h2>
-          <router-view></router-view>
+          <div class="game-container">
+            <!-- Game items will be populated here -->
+          </div>  
         </section>
       </main>
     </div>
@@ -72,7 +74,7 @@
   
   <script>
   export default {
-    name: 'HomePage',
+    name: 'App',
     data() {
       return {
         isMenuOpen: false,
@@ -97,7 +99,7 @@
       },
       async login() {
         try {
-          const response = await fetch('/api/login.php', {
+          const response = await fetch('../backend/api/login.php', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -116,7 +118,7 @@
       },
       async register() {
         try {
-          const response = await fetch('/api/register.php', {
+          const response = await fetch('../backend/api/login.php', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -142,11 +144,14 @@
   <style scoped>
   .app-container {
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
   }
   
   .header {
     display: flex;
     justify-content: space-between;
+    box-sizing: border-box;
     align-items: center;
     padding: 1rem;
     background: #333;
@@ -155,7 +160,7 @@
   
   .auth-section {
     display: flex;
-    gap: 1rem;
+    /* gap: 1rem; */
   }
   
   .auth-section button {
