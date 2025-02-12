@@ -1,6 +1,6 @@
 <?php
     $host = 'localhost';
-    $dbname = 'gamedb';
+    $dbname = 'data';
     // Placeholders for database username and password
     $user = 'root';
     $pass = 'passkey';
