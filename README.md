@@ -7,13 +7,13 @@ The homepage will contain all related information about the game, being the acce
   The game will be controlled by both keyboard and mouse
 
   Keyboard:
-  The key W or the up arrow moving you up
-  The key A or the left arrow moving you left
-  The key S or the down arrow moving you down
-  The key D or the right arrow moving you right
+  - The key W or the up arrow moving you up
+  - The key A or the left arrow moving you left
+  - The key S or the down arrow moving you down
+  - The key D or the right arrow moving you right
  
   Mouse:
-  Using the cursor you will be able to orient your attack direction
+  - Using the cursor you will be able to orient your attack direction
 
 
 ## Project Structure
