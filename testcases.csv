@@ -1,0 +1,31 @@
+Test case ID;Test case name;Test case description;Pre-condition;Test steps;Expected result;Actual result;Result ;Comments
+TC_open_1;Section search;Verify that the search is not case sensitive and provides the wanted results.;The user is logged in.;"1.Open the left side pannel .
+2. Select the search box.
+3. Input a search criteria.";The search is not case sensitive and provides results that match the criteria;Ignores case sensitivity and provides results that match the provided criteria;Pass;
+TC_open_2;Employee editing;Verify that the site provides opportunities to  change a listed users data.;The user is logged in.;"1. Open the PIM section
+2. Select an employee and below actions select the pencil icon
+3. Change the data with a variety of different values";The editing provided allows the opportunity for the user to change an employees data freely;While the text inputs are fine you cannot easily change the date through the provided UI, because it is locked to 1970-current year;Failure;
+TC_open_3;Buzz Newsfeed posting;Verify that posts and all their related functions work, like editing and deleting.;The user is logged in.;"1. On the side pannel open the Buzz section
+2. Select the posting area.
+3. Check opportunities to post a variety of content";You can post, edit and delete any made post, you can post images and videos;Posting, editing and deleting work, but you cant post webp photos and upload video files;Failure;
+TC_open_4;Leave comments;Verify that you can add and view comments on leave records;The user is logged in.;"1. Open the Leave section
+2. Select the dots and chose the needed option
+3. Test the functionality";You can add comments and view them with no issues;You can add and see comments, but you can only view older comments by the add comment option;Failure;
+TC_open_5;Event adding;Verify that you can add events and edit them;The user is logged in.;"1. Open the Claim section
+2. Select the option to add a event
+3. Test a variety of inputs and editing opportunities";You can add events and edit them after the addition;You can add events and edit them after the addition;Pass;
+TC_open_6;Candidate adding;Verify that you can add candidates and edit them;The user is logged in.;"1. Open the Recruitement section
+2. Select the option to add a recruit
+3. Test a variety of inputs and editing opportunities";You can add a candidate with all the required data being allowed and edit after the fact;You can add a candidate with all the required data being allowed and edit after the fact, but then you can short list them without a manager causing the page to crash;Failure;
+TC_open_7;Report adding and editing;Verify that you can add reports and edit them;The user is logged in.;"1. Open the PIM section
+2. Select an report section
+3. Add the report and test the input and editing functionality";You can add a report with all the required data being allowed and edit after the fact;You can add a candidate with all the required data being allowed and edit after the fact;Pass;
+TC_open_8;Corporate branding editing;Verify that you can edit most facets of the corporate branding;The user is logged in.;"1. Open the admin section
+2. Select under More the corporate branding option
+3. Test different values and save them";You can edit the branding to your liking;You can edit the branding to your liking;Pass;
+TC_open_9;Entitlement adding and editing;Verify that you can add and edit entitlements;The user is logged in.;"1. Open the Leave section
+2. Select Entitlements
+3. Test different values and save them";You can add and edit leave entitlements;You can add and edit leave entitlements;Pass;
+TC_open_10;Employee tracker adding and editing;Verify that you can add and edit the employee trackers;The user is logged in.;"1.Open the Performance sectionl .
+2. Select the tracker option under the configure dropdown.
+3. Test different values and save them.";You can add and edit employee trackers;You can add and edit employee trackers;Pass;
