@@ -66,6 +66,7 @@
         <h2>Shop</h2>
         <div class="shop-container">
           <!-- Shop items will be populated here -->
+           <h1>No items currently</h1>
         </div>
       </section>
 
@@ -73,6 +74,7 @@
         <h2>Game</h2>
         <div class="game-container">
           <!-- Game items will be populated here -->
+          <h1>No game access</h1>
         </div>  
       </section>
     </main>
