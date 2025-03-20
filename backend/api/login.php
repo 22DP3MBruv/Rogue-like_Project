@@ -16,12 +16,17 @@
     }
     
     try {
-      $stmt = $db->prepare('SELECT id, password FROM users WHERE username = ?');
+      $stmt = $db->prepare('SELECT userId, password, role FROM Users WHERE username = ?');
       $stmt->execute([$data['username']]);
       $user = $stmt->fetch();
     
       if ($user && password_verify($data['password'], $user['password'])) {
-        echo json_encode(['success' => true, 'user_id' => $user['id']]);
+        // Return role along with userId if login is successful
+        echo json_encode([
+          'success' => true,
+          'user_id' => $user['userId'],
+          'role' => $user['role']
+        ]);
       } else {
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
