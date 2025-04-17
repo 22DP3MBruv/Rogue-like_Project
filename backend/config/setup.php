@@ -1,14 +1,6 @@
 <?php
 require_once 'config/database.php';
 
-// Create connection
-$conn = new mysqli($servername, $dbUsername, $dbPassword, $dbName);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
 // Define Users table
 $sql_users = "CREATE TABLE IF NOT EXISTS Users (
     userId INT AUTO_INCREMENT PRIMARY KEY,
@@ -40,24 +32,24 @@ $sql_articles = "CREATE TABLE IF NOT EXISTS Articles (
     FULLTEXT INDEX ft_search (title, content)
 );";
 
-// Execute table creation queries
-if ($conn->query($sql_users) === TRUE) {
+try {
+    $db->exec($sql_users);
     echo "Users table created successfully<br>";
-} else {
-    echo "Error creating Users table: " . $conn->error . "<br>";
+} catch (PDOException $e) {
+    echo "Error creating Users table: " . $e->getMessage() . "<br>";
 }
 
-if ($conn->query($sql_reports) === TRUE) {
+try {
+    $db->exec($sql_reports);
     echo "Reports table created successfully<br>";
-} else {
-    echo "Error creating Reports table: " . $conn->error . "<br>";
+} catch (PDOException $e) {
+    echo "Error creating Reports table: " . $e->getMessage() . "<br>";
 }
 
-if ($conn->query($sql_articles) === TRUE) {
+try {
+    $db->exec($sql_articles);
     echo "Articles table created successfully<br>";
-} else {
-    echo "Error creating Articles table: " . $conn->error . "<br>";
+} catch (PDOException $e) {
+    echo "Error creating Articles table: " . $e->getMessage() . "<br>";
 }
-
-$conn->close();
 ?>
