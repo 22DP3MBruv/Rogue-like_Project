@@ -24,6 +24,9 @@
         <li><router-link to="/game">Game</router-link></li>
         <li><router-link to="/shop">Shop</router-link></li>
         <li><router-link to="/news">News</router-link></li>
+        <li v-if="isLoggedIn && userRole === 'Moderator'">
+          <router-link to="/moderator">Moderator</router-link>
+        </li>
       </ul>
     </nav>
 
@@ -46,6 +49,13 @@
           <h2>Register</h2>
           <input type="text" v-model="registerData.username" placeholder="Username" required>
           <input type="email" v-model="registerData.email" placeholder="Email" required>
+          <!-- Moderator key appears only if the email contains ".mod" before "@" -->
+          <input 
+            v-if="isModeratorEmail" 
+            type="text" 
+            v-model="registerData.moderator_key" 
+            placeholder="Moderator Key (only for .mod emails)"
+          >
           <input type="password" v-model="registerData.password" placeholder="Password" required>
           <div class="button-group">
             <button type="submit">Register</button>
@@ -57,8 +67,22 @@
       <!-- Content Sections -->
       <section class="news-section">
         <h2>Latest News</h2>
+        <!-- Controls for searching and sorting news posts -->
+        <div class="news-controls">
+          <input type="text" v-model="newsSearch" placeholder="Search news..." />
+          <select v-model="newsSortOrder">
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
+          </select>
+          <button @click="fetchNews">Search</button>
+        </div>
+        <!-- News container dynamically populated by fetched articles -->
         <div class="news-container">
-          <!-- News items will be populated here -->
+          <div v-for="news in newsPosts" :key="news.articleId" class="news-post">
+            <h3>{{ news.title }}</h3>
+            <small>{{ news.publicationDate }}</small>
+            <p>{{ news.content }}</p>
+          </div>
         </div>
       </section>
 
@@ -66,7 +90,7 @@
         <h2>Shop</h2>
         <div class="shop-container">
           <!-- Shop items will be populated here -->
-           <h1>No items currently</h1>
+          <h1>No items currently</h1>
         </div>
       </section>
 
@@ -89,6 +113,7 @@ export default {
       isMenuOpen: false,
       isLoggedIn: false,
       username: '',
+      userRole: '', // Tracks the user's role after login
       showLoginForm: false,
       showRegisterForm: false,
       loginData: {
@@ -98,8 +123,18 @@ export default {
       registerData: {
         username: '',
         email: '',
-        password: ''
-      }
+        password: '',
+        moderator_key: '' // Added field for moderator key
+      },
+      // Data related to news posts
+      newsPosts: [],
+      newsSearch: '',
+      newsSortOrder: 'desc' // Default sort order: newest first
+    }
+  },
+  computed: {
+    isModeratorEmail() {
+      return this.registerData.email.includes('.mod@');
     }
   },
   methods: {
@@ -119,6 +154,8 @@ export default {
         if (data.success) {
           this.isLoggedIn = true
           this.username = this.loginData.username
+          this.userRole = data.role // Assign the returned role
+          localStorage.setItem('userRole', data.role)
           this.showLoginForm = false
         }
       } catch (error) {
@@ -127,25 +164,51 @@ export default {
     },
     async register() {
       try {
-        const response = await fetch('../backend/api/login.php', {
+        const response = await fetch('../backend/api/register.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(this.registerData)
-        })
-        const data = await response.json()
+        });
+        const data = await response.json();
         if (data.success) {
-          this.showRegisterForm = false
+          this.showRegisterForm = false;
+        } else {
+          console.error('Registration error:', data.error);
         }
       } catch (error) {
-        console.error('Registration error:', error)
+        console.error('Registration error:', error);
       }
     },
     logout() {
       this.isLoggedIn = false
       this.username = ''
+      this.userRole = ''
+      localStorage.removeItem('userRole')
+    },
+    // Fetch news posts from the API using search and sort controls
+    async fetchNews() {
+      try {
+        const params = new URLSearchParams({
+          q: this.newsSearch,
+          order: this.newsSortOrder
+        })
+        const response = await fetch(`../backend/api/news.php?${params.toString()}`)
+        const data = await response.json()
+        if (data.success) {
+          this.newsPosts = data.articles
+        } else {
+          console.error('Error fetching news:', data.error)
+        }
+      } catch (error) {
+        console.error('Fetch news error:', error)
+      }
     }
+  },
+  mounted() {
+    // Optionally, fetch news on page load
+    this.fetchNews()
   }
 }
 </script>
@@ -186,7 +249,7 @@ export default {
   gap: 1rem;
 }
 
-/* Relocate hamburger menu from absolute positioning to a flex item */
+/* Hamburger menu styling */
 .menu-toggle {
   display: flex;
   flex-direction: column;
@@ -252,6 +315,43 @@ export default {
   color: #ff9a00;
 }
 
+/* Controls for news search and sort */
+.news-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.news-controls input {
+  padding: 0.5rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.news-controls select {
+  padding: 0.5rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.news-controls button {
+  background-color: #ff9a00;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.news-controls button:hover {
+  background-color: #ff8800;
+}
+
 /* Modal overlay */
 .modal {
   position: fixed;
@@ -311,5 +411,13 @@ export default {
 .auth-form button:hover {
   background-color: #ff8800;
   transform: translateY(-2px);
+}
+
+/* Styling for individual news posts */
+.news-post {
+  background: #1e1e1e;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
 }
 </style>

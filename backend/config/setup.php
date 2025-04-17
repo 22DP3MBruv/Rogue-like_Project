@@ -28,14 +28,16 @@ $sql_reports = "CREATE TABLE IF NOT EXISTS Reports (
     CONSTRAINT FK_Reporter FOREIGN KEY (reporterId) REFERENCES Users (userId)
 );";
 
-// Define Articles table
+// Define Articles table with a FULLTEXT index for fast searching by title and content.
+// This table is used for news posts with sorting by publicationDate and keyword searches.
 $sql_articles = "CREATE TABLE IF NOT EXISTS Articles (
     articleId INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     publicationDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     authorId INT NOT NULL,
-    CONSTRAINT FK_Author FOREIGN KEY (authorId) REFERENCES Users (userId)
+    CONSTRAINT FK_Author FOREIGN KEY (authorId) REFERENCES Users (userId),
+    FULLTEXT INDEX ft_search (title, content)
 );";
 
 // Execute table creation queries
