@@ -164,7 +164,7 @@ export default {
     },
     async register() {
       try {
-        const response = await fetch('../backend/api/register.php', {
+        const response = await fetch('/apiPHP/backend/api/register.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -194,7 +194,7 @@ export default {
           q: this.newsSearch,
           order: this.newsSortOrder
         })
-        const response = await fetch(`../backend/api/news.php?${params.toString()}`)
+        const response = await fetch(`/apiPHP/backend/api/news.php?${params.toString()}`)
         const data = await response.json()
         if (data.success) {
           this.newsPosts = data.articles
