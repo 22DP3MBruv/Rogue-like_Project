@@ -18,7 +18,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/apiPHP': {
-        target: 'http://localhost',
+        target: 'http://localhost/Rogue-like_Project',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/apiPHP/, '')
       }

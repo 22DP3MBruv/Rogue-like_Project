@@ -1,11 +1,12 @@
 <?php
-require_once 'config/database.php';
+require_once __DIR__ . '/database.php';
 
 // Define Users table
 $sql_users = "CREATE TABLE IF NOT EXISTS Users (
     userId INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     role ENUM('Player', 'Moderator') NOT NULL
 );";
 

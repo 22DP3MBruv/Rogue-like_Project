@@ -18,6 +18,9 @@
       </div>
     </header>
 
+    <!-- New overlay to close the menu by clicking outside -->
+    <div v-if="isMenuOpen" class="menu-backdrop" @click="toggleMenu"></div>
+
     <nav class="nav-menu" :class="{ active: isMenuOpen }">
       <ul>
         <li><router-link to="/">Home</router-link></li>
@@ -102,18 +105,25 @@
         </div>  
       </section>
     </main>
+
+    <FooterComponent :isLoggedIn="isLoggedIn" />
   </div>
 </template>
 
 <script>
+import FooterComponent from './components/Footer.vue'
+
 export default {
   name: 'App',
+  components: {
+    FooterComponent
+  },
   data() {
     return {
       isMenuOpen: false,
       isLoggedIn: false,
       username: '',
-      userRole: '', // Tracks the user's role after login
+      userRole: '',
       showLoginForm: false,
       showRegisterForm: false,
       loginData: {
@@ -124,12 +134,11 @@ export default {
         username: '',
         email: '',
         password: '',
-        moderator_key: '' // Added field for moderator key
+        moderator_key: ''
       },
-      // Data related to news posts
       newsPosts: [],
       newsSearch: '',
-      newsSortOrder: 'desc' // Default sort order: newest first
+      newsSortOrder: 'desc'
     }
   },
   computed: {
@@ -139,11 +148,12 @@ export default {
   },
   methods: {
     toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen
+      this.isMenuOpen = !this.isMenuOpen;
     },
     async login() {
       try {
-        const response = await fetch('../backend/api/login.php', {
+        console.log("Login payload:", this.loginData)
+        const response = await fetch('/apiPHP/backend/api/login.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -154,7 +164,7 @@ export default {
         if (data.success) {
           this.isLoggedIn = true
           this.username = this.loginData.username
-          this.userRole = data.role // Assign the returned role
+          this.userRole = data.role
           localStorage.setItem('userRole', data.role)
           this.showLoginForm = false
         }
@@ -182,12 +192,12 @@ export default {
       }
     },
     logout() {
-      this.isLoggedIn = false
-      this.username = ''
-      this.userRole = ''
-      localStorage.removeItem('userRole')
+      this.isLoggedIn = false;
+      this.username = '';
+      this.userRole = '';
+      localStorage.removeItem('userRole');
     },
-    // Fetch news posts from the API using search and sort controls
+// Fetch news posts from the API using search and sort controls
     async fetchNews() {
       try {
         const params = new URLSearchParams({
@@ -207,7 +217,7 @@ export default {
     }
   },
   mounted() {
-    // Optionally, fetch news on page load
+// Optionally, fetch news on page load
     this.fetchNews()
   }
 }
@@ -218,6 +228,7 @@ export default {
 .app-container {
   min-height: 100vh;
   background: #121212;
+  position: relative;
 }
 
 /* Header with dark background and orange gradients */
@@ -270,17 +281,18 @@ export default {
 .nav-menu {
   position: fixed;
   top: 0;
-  right: -250px;
+  right: 0;
   width: 250px;
   height: 100vh;
   background: #1e1e1e;
   transition: transform 0.3s ease;
   padding: 2rem;
   z-index: 10;
+  transform: translateX(100%);
 }
 
 .nav-menu.active {
-  transform: translateX(-250px);
+  transform: translateX(0);
 }
 
 .nav-menu ul {
@@ -296,9 +308,21 @@ export default {
   border-bottom: 1px solid #333;
 }
 
+/* Backdrop to close menu when clicking outside */
+.menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: transparent;
+  z-index: 5;
+}
+
 /* Main content spacing */
 .main-content {
   padding: 2rem;
+  margin-top: 1rem;
 }
 
 /* Section styling */
@@ -320,34 +344,33 @@ export default {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  align-items: center;
 }
-
-.news-controls input {
-  padding: 0.5rem;
+.news-controls input,
+.news-controls select,
+.news-controls button {
+  padding: 0 1rem;
   border: 1px solid #444;
-  border-radius: 4px;
+  border-radius: 5px;
   background: #1e1e1e;
   color: #e0e0e0;
+  font-size: 1rem;
+  height: 2.75rem;  /* explicitly set a uniform height */
+  line-height: 2.75rem;
+  box-sizing: border-box;
 }
-
-.news-controls select {
-  padding: 0.5rem;
-  border: 1px solid #444;
-  border-radius: 4px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+.news-controls input:focus,
+.news-controls select:focus {
+  outline: none;
+  border-color: #ff9a00;
 }
-
 .news-controls button {
   background-color: #ff9a00;
-  color: #fff;
-  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  line-height: normal;
 }
-
 .news-controls button:hover {
   background-color: #ff8800;
 }
