@@ -9,16 +9,17 @@
         </div>
         <div class="auth-section" v-else>
           <span>Welcome, {{ username }}</span>
+          <button @click="showManageAccount = true">Manage Account</button>
           <button @click="logout">Logout</button>
         </div>
-        <!-- Menu toggle is now part of the header-right group -->
+        <!-- Menu toggle -->
         <button class="menu-toggle" @click="toggleMenu">
           <span></span><span></span><span></span>
         </button>
       </div>
     </header>
 
-    <!-- New overlay to close the menu by clicking outside -->
+    <!-- Backdrop for menu -->
     <div v-if="isMenuOpen" class="menu-backdrop" @click="toggleMenu"></div>
 
     <nav class="nav-menu" :class="{ active: isMenuOpen }">
@@ -67,10 +68,27 @@
         </form>
       </div>
 
+      <!-- Manage Account Modal -->
+      <div class="modal" v-if="showManageAccount">
+        <form @submit.prevent="updateAccount" class="auth-form">
+          <h2>Manage Your Account</h2>
+          <!-- New account details -->
+          <input type="text" v-model="accountData.username" placeholder="New Username" required>
+          <input type="email" v-model="accountData.email" placeholder="New Email" required>
+          <!-- Old password is required when changing password -->
+          <input type="password" v-model="accountData.oldPassword" placeholder="Old Password" required>
+          <input type="password" v-model="accountData.password" placeholder="New Password (optional)">
+          <div class="button-group">
+            <button type="submit">Update Account</button>
+            <button type="button" @click="showManageAccount = false">Cancel</button>
+            <button type="button" class="delete" @click="deleteAccount">Delete Account</button>
+          </div>
+        </form>
+      </div>
+
       <!-- Content Sections -->
       <section class="news-section">
         <h2>Latest News</h2>
-        <!-- Controls for searching and sorting news posts -->
         <div class="news-controls">
           <input type="text" v-model="newsSearch" placeholder="Search news..." />
           <select v-model="newsSortOrder">
@@ -79,7 +97,6 @@
           </select>
           <button @click="fetchNews">Search</button>
         </div>
-        <!-- News container dynamically populated by fetched articles -->
         <div class="news-container">
           <div v-for="news in newsPosts" :key="news.articleId" class="news-post">
             <h3>{{ news.title }}</h3>
@@ -89,18 +106,9 @@
         </div>
       </section>
 
-      <section class="shop-section">
-        <h2>Shop</h2>
-        <div class="shop-container">
-          <!-- Shop items will be populated here -->
-          <h1>No items currently</h1>
-        </div>
-      </section>
-
       <section class="game-section">
         <h2>Game</h2>
         <div class="game-container">
-          <!-- Game items will be populated here -->
           <h1>No game access</h1>
         </div>  
       </section>
@@ -115,9 +123,7 @@ import FooterComponent from './components/Footer.vue'
 
 export default {
   name: 'App',
-  components: {
-    FooterComponent
-  },
+  components: { FooterComponent },
   data() {
     return {
       isMenuOpen: false,
@@ -126,6 +132,7 @@ export default {
       userRole: '',
       showLoginForm: false,
       showRegisterForm: false,
+      showManageAccount: false,
       loginData: {
         username: '',
         password: ''
@@ -135,6 +142,12 @@ export default {
         email: '',
         password: '',
         moderator_key: ''
+      },
+      accountData: {
+        username: '',
+        email: '',
+        password: '',
+        oldPassword: ''
       },
       newsPosts: [],
       newsSearch: '',
@@ -155,18 +168,19 @@ export default {
         console.log("Login payload:", this.loginData)
         const response = await fetch('/apiPHP/backend/api/login.php', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.loginData)
         })
         const data = await response.json()
         if (data.success) {
-          this.isLoggedIn = true
-          this.username = this.loginData.username
-          this.userRole = data.role
-          localStorage.setItem('userRole', data.role)
-          this.showLoginForm = false
+          this.isLoggedIn = true;
+          this.username = this.loginData.username;
+          this.userRole = data.role;
+          localStorage.setItem('userRole', data.role);
+          this.showLoginForm = false;
+          // Load account info into accountData
+          this.accountData.username = this.loginData.username;
+          // In production, fetch email from API if available.
         }
       } catch (error) {
         console.error('Login error:', error)
@@ -176,9 +190,7 @@ export default {
       try {
         const response = await fetch('/apiPHP/backend/api/register.php', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.registerData)
         });
         const data = await response.json();
@@ -197,7 +209,6 @@ export default {
       this.userRole = '';
       localStorage.removeItem('userRole');
     },
-// Fetch news posts from the API using search and sort controls
     async fetchNews() {
       try {
         const params = new URLSearchParams({
@@ -205,20 +216,70 @@ export default {
           order: this.newsSortOrder
         })
         const response = await fetch(`/apiPHP/backend/api/news.php?${params.toString()}`)
-        const data = await response.json()
+        const data = await response.json();
         if (data.success) {
-          this.newsPosts = data.articles
+          this.newsPosts = data.articles;
         } else {
-          console.error('Error fetching news:', data.error)
+          console.error('Error fetching news:', data.error);
         }
       } catch (error) {
-        console.error('Fetch news error:', error)
+        console.error('Fetch news error:', error);
+      }
+    },
+    async updateAccount() {
+      try {
+        const payload = {
+          currentUsername: this.username, // current account identifier
+          username: this.accountData.username,
+          email: this.accountData.email,
+          oldPassword: this.accountData.oldPassword,
+          password: this.accountData.password  // if left blank, password will not be updated
+        }
+        const response = await fetch('/apiPHP/backend/api/updateAccount.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert(`Account updated for ${this.accountData.username}`);
+          this.username = this.accountData.username;
+          this.showManageAccount = false;
+        } else {
+          alert('Update error: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Update account error:', error);
+      }
+    },
+    async deleteAccount() {
+      try {
+        const confirmDelete = confirm("Are you sure you want to delete your account? This action cannot be undone.");
+        if (!confirmDelete) return;
+        // Send currentUsername and oldPassword for security in account deletion.
+        const payload = {
+          currentUsername: this.username,
+          oldPassword: this.accountData.oldPassword
+        }
+        const response = await fetch('/apiPHP/backend/api/deleteAccount.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert("Account deleted successfully.");
+          this.logout();
+        } else {
+          alert("Deletion error: " + data.error);
+        }
+      } catch (error) {
+        console.error('Delete account error:', error);
       }
     }
   },
   mounted() {
-// Optionally, fetch news on page load
-    this.fetchNews()
+    this.fetchNews();
   }
 }
 </script>
@@ -231,7 +292,7 @@ export default {
   position: relative;
 }
 
-/* Header with dark background and orange gradients */
+/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -241,26 +302,21 @@ export default {
   background: linear-gradient(135deg, #ff9a00, #cc7000);
   color: #fff;
 }
-
-/* New container to group right-side header items */
 .header-right {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
-
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
 }
-
-/* Auth section with spaced buttons */
 .auth-section {
   display: flex;
   gap: 1rem;
 }
 
-/* Hamburger menu styling */
+/* Hamburger menu */
 .menu-toggle {
   display: flex;
   flex-direction: column;
@@ -269,7 +325,6 @@ export default {
   border: none;
   cursor: pointer;
 }
-
 .menu-toggle span {
   display: block;
   width: 25px;
@@ -290,16 +345,13 @@ export default {
   z-index: 10;
   transform: translateX(100%);
 }
-
 .nav-menu.active {
   transform: translateX(0);
 }
-
 .nav-menu ul {
   list-style: none;
   padding: 0;
 }
-
 .nav-menu a {
   color: #fff;
   text-decoration: none;
@@ -308,7 +360,7 @@ export default {
   border-bottom: 1px solid #333;
 }
 
-/* Backdrop to close menu when clicking outside */
+/* Backdrop to close menu */
 .menu-backdrop {
   position: fixed;
   top: 0;
@@ -324,14 +376,10 @@ export default {
   padding: 2rem;
   margin-top: 1rem;
 }
-
-/* Section styling */
 .news-section,
-.shop-section,
 .game-section {
   margin-bottom: 2rem;
 }
-
 .news-section h2,
 .shop-section h2,
 .game-section h2 {
@@ -339,7 +387,7 @@ export default {
   color: #ff9a00;
 }
 
-/* Controls for news search and sort */
+/* News controls */
 .news-controls {
   display: flex;
   gap: 0.5rem;
@@ -355,7 +403,7 @@ export default {
   background: #1e1e1e;
   color: #e0e0e0;
   font-size: 1rem;
-  height: 2.75rem;  /* explicitly set a uniform height */
+  height: 2.75rem;
   line-height: 2.75rem;
   box-sizing: border-box;
 }
@@ -388,7 +436,6 @@ export default {
   align-items: center;
   z-index: 20;
 }
-
 /* Auth form styling */
 .auth-form {
   background: #1e1e1e;
@@ -400,12 +447,10 @@ export default {
   min-width: 300px;
   color: #e0e0e0;
 }
-
 .auth-form h2 {
   margin: 0;
   color: #ff9a00;
 }
-
 .auth-form input {
   padding: 0.75rem;
   border: 1px solid #444;
@@ -413,14 +458,11 @@ export default {
   background: #121212;
   color: #e0e0e0;
 }
-
-/* Button group for modal actions */
 .button-group {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
-
 .auth-form button {
   background-color: #ff9a00;
   color: #fff;
@@ -430,13 +472,19 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
 .auth-form button:hover {
   background-color: #ff8800;
   transform: translateY(-2px);
 }
+/* Additional button style for deletion */
+.auth-form button.delete {
+  background-color: #cc0000;
+}
+.auth-form button.delete:hover {
+  background-color: #a30000;
+}
 
-/* Styling for individual news posts */
+/* News post styling */
 .news-post {
   background: #1e1e1e;
   padding: 1rem;
