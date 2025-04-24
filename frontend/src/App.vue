@@ -9,7 +9,7 @@
         </div>
         <div class="auth-section" v-else>
           <span>Welcome, {{ username }}</span>
-          <button @click="showManageAccount = true">Manage Account</button>
+          <button @click="openManageAccountOptions">Manage Account</button>
           <button @click="logout">Logout</button>
         </div>
         <!-- Menu toggle -->
@@ -35,11 +35,11 @@
     </nav>
 
     <main class="main-content">
-      <!-- Auth Forms -->
+      <!-- Login Modal -->
       <div class="modal" v-if="showLoginForm">
         <form @submit.prevent="login" class="auth-form">
           <h2>Login</h2>
-          <input type="text" v-model="loginData.username" placeholder="Username" required>
+          <input type="text" v-model="loginData.identity" placeholder="Email or Username" required>
           <input type="password" v-model="loginData.password" placeholder="Password" required>
           <div class="button-group">
             <button type="submit">Login</button>
@@ -48,18 +48,13 @@
         </form>
       </div>
 
+      <!-- Register Modal -->
       <div class="modal" v-if="showRegisterForm">
         <form @submit.prevent="register" class="auth-form">
           <h2>Register</h2>
           <input type="text" v-model="registerData.username" placeholder="Username" required>
           <input type="email" v-model="registerData.email" placeholder="Email" required>
-          <!-- Moderator key appears only if the email contains ".mod" before "@" -->
-          <input 
-            v-if="isModeratorEmail" 
-            type="text" 
-            v-model="registerData.moderator_key" 
-            placeholder="Moderator Key (only for .mod emails)"
-          >
+          <input v-if="isModeratorEmail" type="text" v-model="registerData.moderator_key" placeholder="Moderator Key (only for .mod emails)">
           <input type="password" v-model="registerData.password" placeholder="Password" required>
           <div class="button-group">
             <button type="submit">Register</button>
@@ -68,22 +63,57 @@
         </form>
       </div>
 
-      <!-- Manage Account Modal -->
+      <!-- Manage Account Options Modal -->
       <div class="modal" v-if="showManageAccount">
-        <form @submit.prevent="updateAccount" class="auth-form">
+        <div class="auth-form">
           <h2>Manage Your Account</h2>
-          <!-- New account details -->
+          <div class="button-group" style="flex-direction: column;">
+            <button type="button" @click="openUpdateAccountInfo">Update Account Info</button>
+            <button type="button" @click="openUpdatePassword">Update Password</button>
+            <button type="button" @click="openDeleteAccountModal">Delete Account</button>
+            <button type="button" @click="closeManageAccount">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Account Info Modal -->
+      <div class="modal" v-if="showUpdateAccountInfo">
+        <form @submit.prevent="updateAccount" class="auth-form">
+          <h2>Update Account Info</h2>
           <input type="text" v-model="accountData.username" placeholder="New Username" required>
           <input type="email" v-model="accountData.email" placeholder="New Email" required>
-          <!-- Old password is required when changing password -->
-          <input type="password" v-model="accountData.oldPassword" placeholder="Old Password" required>
-          <input type="password" v-model="accountData.password" placeholder="New Password (optional)">
+          <input type="password" v-model="accountData.oldPassword" placeholder="Current Password" required>
           <div class="button-group">
             <button type="submit">Update Account</button>
-            <button type="button" @click="showManageAccount = false">Cancel</button>
-            <button type="button" class="delete" @click="deleteAccount">Delete Account</button>
+            <button type="button" @click="closeUpdateAccountInfo">Cancel</button>
           </div>
         </form>
+      </div>
+
+      <!-- Update Password Modal -->
+      <div class="modal" v-if="showUpdatePassword">
+        <form @submit.prevent="updatePassword" class="auth-form">
+          <h2>Update Password</h2>
+          <input type="password" v-model="passwordData.oldPassword" placeholder="Current Password" required>
+          <input type="password" v-model="passwordData.newPassword" placeholder="New Password" required>
+          <input type="password" v-model="passwordData.confirmPassword" placeholder="Confirm New Password" required>
+          <div class="button-group">
+            <button type="submit">Update Password</button>
+            <button type="button" @click="closeUpdatePassword">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Delete Account Confirmation Modal -->
+      <div class="modal" v-if="showDeleteAccountModal">
+        <div class="auth-form">
+          <h2>Confirm Account Deletion</h2>
+          <input type="password" v-model="deleteData.oldPassword" placeholder="Current Password" required>
+          <div class="button-group">
+            <button type="button" @click="deleteAccountConfirmed">Delete Account</button>
+            <button type="button" @click="closeDeleteAccountModal">Cancel</button>
+          </div>
+        </div>
       </div>
 
       <!-- Content Sections -->
@@ -132,9 +162,12 @@ export default {
       userRole: '',
       showLoginForm: false,
       showRegisterForm: false,
-      showManageAccount: false,
+      showManageAccount: false,           // Manage options modal
+      showUpdateAccountInfo: false,       // For account info update modal
+      showUpdatePassword: false,          // For password update modal
+      showDeleteAccountModal: false,      // New delete account confirmation modal
       loginData: {
-        username: '',
+        identity: '',
         password: ''
       },
       registerData: {
@@ -146,7 +179,14 @@ export default {
       accountData: {
         username: '',
         email: '',
-        password: '',
+        oldPassword: ''                   // Added for update account confirmation
+      },
+      passwordData: {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      },
+      deleteData: {                      // Data for delete account confirmation
         oldPassword: ''
       },
       newsPosts: [],
@@ -165,25 +205,23 @@ export default {
     },
     async login() {
       try {
-        console.log("Login payload:", this.loginData)
+        console.log("Login payload:", this.loginData);
         const response = await fetch('/apiPHP/backend/api/login.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.loginData)
-        })
-        const data = await response.json()
+        });
+        const data = await response.json();
         if (data.success) {
           this.isLoggedIn = true;
-          this.username = this.loginData.username;
+          this.username = data.username;
           this.userRole = data.role;
           localStorage.setItem('userRole', data.role);
           this.showLoginForm = false;
-          // Load account info into accountData
-          this.accountData.username = this.loginData.username;
-          // In production, fetch email from API if available.
+          this.accountData.username = data.username;
         }
       } catch (error) {
-        console.error('Login error:', error)
+        console.error('Login error:', error);
       }
     },
     async register() {
@@ -195,7 +233,13 @@ export default {
         });
         const data = await response.json();
         if (data.success) {
+          this.isLoggedIn = true;
+          this.username = this.registerData.username;
+          this.userRole = data.role || 'Player';
+          localStorage.setItem('userRole', this.userRole);
           this.showRegisterForm = false;
+          this.accountData.username = this.registerData.username;
+          this.accountData.email = this.registerData.email;
         } else {
           console.error('Registration error:', data.error);
         }
@@ -214,8 +258,8 @@ export default {
         const params = new URLSearchParams({
           q: this.newsSearch,
           order: this.newsSortOrder
-        })
-        const response = await fetch(`/apiPHP/backend/api/news.php?${params.toString()}`)
+        });
+        const response = await fetch(`/apiPHP/backend/api/news.php?${params.toString()}`);
         const data = await response.json();
         if (data.success) {
           this.newsPosts = data.articles;
@@ -229,12 +273,11 @@ export default {
     async updateAccount() {
       try {
         const payload = {
-          currentUsername: this.username, // current account identifier
+          currentUsername: this.username,
           username: this.accountData.username,
           email: this.accountData.email,
-          oldPassword: this.accountData.oldPassword,
-          password: this.accountData.password  // if left blank, password will not be updated
-        }
+          oldPassword: this.accountData.oldPassword  // Sending current password for confirmation
+        };
         const response = await fetch('/apiPHP/backend/api/updateAccount.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -244,7 +287,7 @@ export default {
         if (data.success) {
           alert(`Account updated for ${this.accountData.username}`);
           this.username = this.accountData.username;
-          this.showManageAccount = false;
+          this.showUpdateAccountInfo = false;
         } else {
           alert('Update error: ' + data.error);
         }
@@ -252,15 +295,42 @@ export default {
         console.error('Update account error:', error);
       }
     },
-    async deleteAccount() {
+    async updatePassword() {
+      if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
+        alert("New passwords do not match!");
+        return;
+      }
       try {
-        const confirmDelete = confirm("Are you sure you want to delete your account? This action cannot be undone.");
-        if (!confirmDelete) return;
-        // Send currentUsername and oldPassword for security in account deletion.
         const payload = {
           currentUsername: this.username,
-          oldPassword: this.accountData.oldPassword
+          oldPassword: this.passwordData.oldPassword,
+          newPassword: this.passwordData.newPassword
+        };
+        const response = await fetch('/apiPHP/backend/api/updatePassword.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert("Password updated successfully!");
+          this.showUpdatePassword = false;
+          this.passwordData.oldPassword = '';
+          this.passwordData.newPassword = '';
+          this.passwordData.confirmPassword = '';
+        } else {
+          alert("Error: " + data.error);
         }
+      } catch (error) {
+        console.error("Update password error:", error);
+      }
+    },
+    async deleteAccountConfirmed() {
+      try {
+        const payload = {
+          currentUsername: this.username,
+          oldPassword: this.deleteData.oldPassword
+        };
         const response = await fetch('/apiPHP/backend/api/deleteAccount.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -270,12 +340,45 @@ export default {
         if (data.success) {
           alert("Account deleted successfully.");
           this.logout();
+          this.closeDeleteAccountModal();
         } else {
           alert("Deletion error: " + data.error);
         }
       } catch (error) {
         console.error('Delete account error:', error);
       }
+    },
+    openManageAccountOptions() {
+      this.showManageAccount = true;
+    },
+    openUpdateAccountInfo() {
+      this.showManageAccount = false;
+      this.accountData.oldPassword = '';
+      this.showUpdateAccountInfo = true;
+    },
+    closeUpdateAccountInfo() {
+      this.showUpdateAccountInfo = false;
+    },
+    openUpdatePassword() {
+      this.showManageAccount = false;
+      this.passwordData.oldPassword = '';
+      this.passwordData.newPassword = '';
+      this.passwordData.confirmPassword = '';
+      this.showUpdatePassword = true;
+    },
+    closeUpdatePassword() {
+      this.showUpdatePassword = false;
+    },
+    openDeleteAccountModal() {
+      this.showManageAccount = false;
+      this.deleteData.oldPassword = '';
+      this.showDeleteAccountModal = true;
+    },
+    closeDeleteAccountModal() {
+      this.showDeleteAccountModal = false;
+    },
+    closeManageAccount() {
+      this.showManageAccount = false;
     }
   },
   mounted() {

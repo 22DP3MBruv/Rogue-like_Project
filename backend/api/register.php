@@ -25,7 +25,7 @@
         exit;
       }
       
-      // Determine role: default to Player, unless a valid moderator key is provided
+      // Determine role: default to Player unless a valid moderator key is provided
       $role = "Player";
       if (!empty($data['moderator_key']) && $data['moderator_key'] === 'adminpass') { // Change this key to something more secure
           $role = "Moderator";

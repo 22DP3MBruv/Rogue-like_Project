@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/database.php';
+require_once 'database.php';
 
 // Define Users table
 $sql_users = "CREATE TABLE IF NOT EXISTS Users (
