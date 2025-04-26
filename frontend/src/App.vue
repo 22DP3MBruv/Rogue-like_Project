@@ -1,23 +1,15 @@
 <template>
   <div class="app-container">
-    <header class="header">
-      <div class="logo">Logo</div>
-      <div class="header-right">
-        <div class="auth-section" v-if="!isLoggedIn">
-          <button @click="showLoginForm = true">Login</button>
-          <button @click="showRegisterForm = true">Register</button>
-        </div>
-        <div class="auth-section" v-else>
-          <span>Welcome, {{ username }}</span>
-          <button @click="openManageAccountOptions">Manage Account</button>
-          <button @click="logout">Logout</button>
-        </div>
-        <!-- Menu toggle -->
-        <button class="menu-toggle" @click="toggleMenu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </header>
+    <!-- Use HeaderComponent -->
+    <HeaderComponent 
+      :isLoggedIn="isLoggedIn" 
+      :username="username"
+      @open-login="showLoginForm = true"
+      @open-register="showRegisterForm = true"
+      @open-manage-account="openManageAccountOptions"
+      @logout="logout"
+      @toggle-menu="toggleMenu"
+    />
 
     <!-- Backdrop for menu -->
     <div v-if="isMenuOpen" class="menu-backdrop" @click="toggleMenu"></div>
@@ -25,9 +17,8 @@
     <nav class="nav-menu" :class="{ active: isMenuOpen }">
       <ul>
         <li><router-link to="/">Home</router-link></li>
-        <li><router-link to="/game">Game</router-link></li>
-        <li><router-link to="/shop">Shop</router-link></li>
-        <li><router-link to="/news">News</router-link></li>
+        <router-link to="/#news-section">News</router-link>
+        <router-link to="/#game-section">Game</router-link>
         <li v-if="isLoggedIn && userRole === 'Moderator'">
           <router-link to="/moderator">Moderator</router-link>
         </li>
@@ -117,7 +108,7 @@
       </div>
 
       <!-- Content Sections -->
-      <section class="news-section">
+      <section id="news-section" class="news-section">
         <h2>Latest News</h2>
         <div class="news-controls">
           <input type="text" v-model="newsSearch" placeholder="Search news..." />
@@ -136,7 +127,7 @@
         </div>
       </section>
 
-      <section class="game-section">
+      <section id="game-section" class="game-section">
         <h2>Game</h2>
         <div class="game-container">
           <h1>No game access</h1>
@@ -149,11 +140,12 @@
 </template>
 
 <script>
+import HeaderComponent from './components/Header.vue'
 import FooterComponent from './components/Footer.vue'
 
 export default {
   name: 'App',
-  components: { FooterComponent },
+  components: { HeaderComponent, FooterComponent },
   data() {
     return {
       isMenuOpen: false,
@@ -162,10 +154,10 @@ export default {
       userRole: '',
       showLoginForm: false,
       showRegisterForm: false,
-      showManageAccount: false,           // Manage options modal
-      showUpdateAccountInfo: false,       // For account info update modal
-      showUpdatePassword: false,          // For password update modal
-      showDeleteAccountModal: false,      // New delete account confirmation modal
+      showManageAccount: false,
+      showUpdateAccountInfo: false,
+      showUpdatePassword: false,
+      showDeleteAccountModal: false,
       loginData: {
         identity: '',
         password: ''
@@ -179,24 +171,33 @@ export default {
       accountData: {
         username: '',
         email: '',
-        oldPassword: ''                   // Added for update account confirmation
+        oldPassword: ''
       },
       passwordData: {
         oldPassword: '',
         newPassword: '',
         confirmPassword: ''
       },
-      deleteData: {                      // Data for delete account confirmation
-        oldPassword: ''
-      },
+      deleteData: { oldPassword: '' },
       newsPosts: [],
       newsSearch: '',
-      newsSortOrder: 'desc'
+      newsSortOrder: 'desc',
+      reportData: { type: 'GameIssue', content: '' }
     }
   },
   computed: {
     isModeratorEmail() {
       return this.registerData.email.includes('.mod@');
+    }
+  },
+  created() {
+    // Load authentication state from localStorage.
+    const storedUsername = localStorage.getItem('username');
+    const storedRole = localStorage.getItem('userRole');
+    if (storedUsername && storedRole) {
+      this.username = storedUsername;
+      this.userRole = storedRole;
+      this.isLoggedIn = true;
     }
   },
   methods: {
@@ -205,7 +206,6 @@ export default {
     },
     async login() {
       try {
-        console.log("Login payload:", this.loginData);
         const response = await fetch('/apiPHP/backend/api/login.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -216,41 +216,20 @@ export default {
           this.isLoggedIn = true;
           this.username = data.username;
           this.userRole = data.role;
+          localStorage.setItem('userId', data.user_id || data.username);
+          localStorage.setItem('username', data.username);
           localStorage.setItem('userRole', data.role);
           this.showLoginForm = false;
-          this.accountData.username = data.username;
         }
       } catch (error) {
         console.error('Login error:', error);
-      }
-    },
-    async register() {
-      try {
-        const response = await fetch('/apiPHP/backend/api/register.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.registerData)
-        });
-        const data = await response.json();
-        if (data.success) {
-          this.isLoggedIn = true;
-          this.username = this.registerData.username;
-          this.userRole = data.role || 'Player';
-          localStorage.setItem('userRole', this.userRole);
-          this.showRegisterForm = false;
-          this.accountData.username = this.registerData.username;
-          this.accountData.email = this.registerData.email;
-        } else {
-          console.error('Registration error:', data.error);
-        }
-      } catch (error) {
-        console.error('Registration error:', error);
       }
     },
     logout() {
       this.isLoggedIn = false;
       this.username = '';
       this.userRole = '';
+      localStorage.removeItem('username');
       localStorage.removeItem('userRole');
     },
     async fetchNews() {
@@ -276,7 +255,7 @@ export default {
           currentUsername: this.username,
           username: this.accountData.username,
           email: this.accountData.email,
-          oldPassword: this.accountData.oldPassword  // Sending current password for confirmation
+          oldPassword: this.accountData.oldPassword
         };
         const response = await fetch('/apiPHP/backend/api/updateAccount.php', {
           method: 'POST',
@@ -348,17 +327,14 @@ export default {
         console.error('Delete account error:', error);
       }
     },
-    openManageAccountOptions() {
-      this.showManageAccount = true;
-    },
+    openManageAccountOptions() { this.showManageAccount = true; },
+    closeManageAccount() { this.showManageAccount = false;},
     openUpdateAccountInfo() {
       this.showManageAccount = false;
       this.accountData.oldPassword = '';
       this.showUpdateAccountInfo = true;
     },
-    closeUpdateAccountInfo() {
-      this.showUpdateAccountInfo = false;
-    },
+    closeUpdateAccountInfo() { this.showUpdateAccountInfo = false; },
     openUpdatePassword() {
       this.showManageAccount = false;
       this.passwordData.oldPassword = '';
@@ -366,20 +342,13 @@ export default {
       this.passwordData.confirmPassword = '';
       this.showUpdatePassword = true;
     },
-    closeUpdatePassword() {
-      this.showUpdatePassword = false;
-    },
+    closeUpdatePassword() { this.showUpdatePassword = false; },
     openDeleteAccountModal() {
       this.showManageAccount = false;
       this.deleteData.oldPassword = '';
       this.showDeleteAccountModal = true;
     },
-    closeDeleteAccountModal() {
-      this.showDeleteAccountModal = false;
-    },
-    closeManageAccount() {
-      this.showManageAccount = false;
-    }
+    closeDeleteAccountModal() { this.showDeleteAccountModal = false; }
   },
   mounted() {
     this.fetchNews();
@@ -393,46 +362,6 @@ export default {
   min-height: 100vh;
   background: #121212;
   position: relative;
-}
-
-/* Header */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-sizing: border-box;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #ff9a00, #cc7000);
-  color: #fff;
-}
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-.auth-section {
-  display: flex;
-  gap: 1rem;
-}
-
-/* Hamburger menu */
-.menu-toggle {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.menu-toggle span {
-  display: block;
-  width: 25px;
-  height: 3px;
-  background: #fff;
 }
 
 /* Navigation menu */
@@ -463,7 +392,7 @@ export default {
   border-bottom: 1px solid #333;
 }
 
-/* Backdrop to close menu */
+/* Backdrop */
 .menu-backdrop {
   position: fixed;
   top: 0;
@@ -484,7 +413,6 @@ export default {
   margin-bottom: 2rem;
 }
 .news-section h2,
-.shop-section h2,
 .game-section h2 {
   margin-bottom: 1rem;
   color: #ff9a00;
@@ -495,7 +423,6 @@ export default {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  align-items: center;
 }
 .news-controls input,
 .news-controls select,
@@ -520,7 +447,6 @@ export default {
   border: none;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  line-height: normal;
 }
 .news-controls button:hover {
   background-color: #ff8800;
@@ -539,6 +465,7 @@ export default {
   align-items: center;
   z-index: 20;
 }
+
 /* Auth form styling */
 .auth-form {
   background: #1e1e1e;
@@ -579,7 +506,6 @@ export default {
   background-color: #ff8800;
   transform: translateY(-2px);
 }
-/* Additional button style for deletion */
 .auth-form button.delete {
   background-color: #cc0000;
 }

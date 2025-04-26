@@ -2,7 +2,8 @@
   <footer class="footer">
     <div class="footer-links">
       <button @click="openAboutModal">About Us</button>
-      <button @click="openReportModal">Send Report</button>
+      <button @click="openContactModal">Contact Us</button>
+      <button v-if="isLoggedIn" @click="openReportModal">Send Report</button>
       <button v-if="isLoggedIn" @click="openMyReportsModal">My Reports</button>
     </div>
 
@@ -15,7 +16,20 @@
       </div>
     </div>
 
-    <!-- Send Report Modal -->
+    <!-- Contact Us Modal (updated: no inputs, only displays email and phone) -->
+    <div v-if="showContactModal" class="modal-overlay" @click.self="closeContactModal">
+      <div class="modal-content">
+        <h2>Contact Us</h2>
+        <!-- Temporary contact details as placeholder -->
+        <p><strong>Email:</strong> support@rvt.lv</p> 
+        <p><strong>Phone:</strong> 11 111 111</p>
+        <div class="modal-buttons">
+          <button type="button" @click="closeContactModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send Report modal-->
     <div v-if="showReportModal" class="modal-overlay" @click.self="closeReportModal">
       <div class="modal-content">
         <h2>Send a Report</h2>
@@ -35,7 +49,7 @@
       </div>
     </div>
 
-    <!-- My Reports Modal -->
+<!-- My Reports Modal -->
     <div v-if="showMyReportsModal" class="modal-overlay" @click.self="closeMyReportsModal">
       <div class="modal-content">
         <h2>My Reports</h2>
@@ -54,7 +68,6 @@
 export default {
   name: 'FooterComponent',
   props: {
-    // Pass the logged-in status from the parent (if available)
     isLoggedIn: {
       type: Boolean,
       default: false
@@ -63,6 +76,7 @@ export default {
   data() {
     return {
       showAboutModal: false,
+      showContactModal: false,
       showReportModal: false,
       showMyReportsModal: false,
       reportData: {
@@ -78,6 +92,12 @@ export default {
     },
     closeAboutModal() {
       this.showAboutModal = false;
+    },
+    openContactModal() {
+      this.showContactModal = true;
+    },
+    closeContactModal() {
+      this.showContactModal = false;
     },
     openReportModal() {
       this.showReportModal = true;
@@ -188,6 +208,7 @@ export default {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+  margin-top: 1rem;
 }
 .modal-buttons button {
   background-color: #ff9a00;
