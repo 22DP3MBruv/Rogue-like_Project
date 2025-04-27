@@ -1,6 +1,15 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
 header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+require_once __DIR__ . '/../config/database.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -20,16 +29,14 @@ $password        = isset($data['password']) ? trim($data['password']) : '';
 
 try {
     if ($password !== '') {
-        // Update username, email, and password
         $stmt = $db->prepare("UPDATE Users SET username = :username, email = :email, password = :password WHERE username = :currentUsername");
         $result = $stmt->execute([
             ':username'        => $newUsername,
             ':email'           => $email,
-            ':password'        => $password,  // For production use password hashing
+            ':password'        => $password,
             ':currentUsername' => $currentUsername
         ]);
     } else {
-        // Update username and email only
         $stmt = $db->prepare("UPDATE Users SET username = :username, email = :email WHERE username = :currentUsername");
         $result = $stmt->execute([
             ':username'        => $newUsername,
@@ -38,11 +45,7 @@ try {
         ]);
     }
 
-    if ($result) {
-        echo json_encode(["success" => true]);
-    } else {
-        echo json_encode(["success" => false, "error" => "Account update failed"]);
-    }
+    echo json_encode(["success" => $result]);
 } catch (PDOException $e) {
     echo json_encode(["success" => false, "error" => $e->getMessage()]);
 }

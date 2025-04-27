@@ -1,10 +1,13 @@
 <?php
-// filepath: c:\Users\marks\Documents\Personal\Rogue-like_Project\Rogue-like_Project\backend\api\news.php
-
-// Set headers for JSON output and enable GET requests
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 require_once '../config/database.php';
 require_once '../config/functions.php';
@@ -24,7 +27,8 @@ try {
         $stmt = $db->prepare($sql);
         $searchTerm = '%' . $search . '%';
         $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
-    } else {
+    } else
+ {
         // Otherwise, retrieve all news posts sorted by publicationDate
         $sql = "SELECT articleId, title, content, publicationDate, authorId 
                 FROM Articles 
@@ -33,14 +37,11 @@ try {
     }
     
     $stmt->execute();
-    // Fetch all results as an associative array
     $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Return the list of articles as a JSON response
     send_json_response(['success' => true, 'articles' => $articles]);
     
 } catch (PDOException $e) {
-    // Return a JSON error response if a database error occurs
     send_json_response(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
 }
 ?>

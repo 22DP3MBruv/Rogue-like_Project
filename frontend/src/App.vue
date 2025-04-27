@@ -206,7 +206,7 @@ export default {
     },
     async login() {
       try {
-        const response = await fetch('/apiPHP/backend/api/login.php', {
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/login.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.loginData)
@@ -238,7 +238,7 @@ export default {
           q: this.newsSearch,
           order: this.newsSortOrder
         });
-        const response = await fetch(`/apiPHP/backend/api/news.php?${params.toString()}`);
+        const response = await fetch(`http://localhost/Rogue-like_Project/backend/api/news.php?${params.toString()}`);
         const data = await response.json();
         if (data.success) {
           this.newsPosts = data.articles;
@@ -249,6 +249,25 @@ export default {
         console.error('Fetch news error:', error);
       }
     },
+    async register() {
+      try {
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/register.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.registerData)
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert("Registration successful!");
+          this.showRegisterForm = false;
+        } else {
+          alert("Registration error: " + data.error);
+        }
+      } catch (error) {
+        console.error("Registration error:", error);
+        alert("An error occurred during registration.");
+      }
+    },
     async updateAccount() {
       try {
         const payload = {
@@ -257,7 +276,7 @@ export default {
           email: this.accountData.email,
           oldPassword: this.accountData.oldPassword
         };
-        const response = await fetch('/apiPHP/backend/api/updateAccount.php', {
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/updateAccount.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -285,7 +304,7 @@ export default {
           oldPassword: this.passwordData.oldPassword,
           newPassword: this.passwordData.newPassword
         };
-        const response = await fetch('/apiPHP/backend/api/updatePassword.php', {
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/updatePassword.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -310,7 +329,7 @@ export default {
           currentUsername: this.username,
           oldPassword: this.deleteData.oldPassword
         };
-        const response = await fetch('/apiPHP/backend/api/deleteAccount.php', {
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/deleteAccount.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

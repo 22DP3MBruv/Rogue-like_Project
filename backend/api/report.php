@@ -1,11 +1,18 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
-
 header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+require_once __DIR__ . '/../config/database.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Check if this is an update request
 if (isset($data['action']) && $data['action'] === 'update') {
     if (!isset($data['reportId']) || !isset($data['status'])) {
         echo json_encode(["success" => false, "error" => "Missing required parameters"]);
@@ -27,11 +34,9 @@ if (isset($data['action']) && $data['action'] === 'update') {
     exit;
 }
 
-// If not update then assume it is a new report submission.
 if (isset($data['type']) && isset($data['content'])) {
     $reportType = $data['type'];
     $content = $data['content'];
-    // In a real application, reporterId would come from the user’s session/authentication context.
     $reporterId = $data['reporterId'] ?? 0;
     try {
         $stmt = $db->prepare("INSERT INTO Reports (reporterId, type, content, status) VALUES (:reporterId, :type, :content, 'Open')");
