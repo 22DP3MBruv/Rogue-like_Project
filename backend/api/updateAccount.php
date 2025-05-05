@@ -9,14 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/../config/database.php';
+require_once '../config/database.php';
+require_once '../config/functions.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (
     !isset($data['currentUsername']) ||
     !isset($data['username']) ||
-    !isset($data['email'])
+    !isset($data['oldPassword'])
 ) {
     echo json_encode(["success" => false, "error" => "Missing required fields"]);
     exit;
@@ -24,26 +25,30 @@ if (
 
 $currentUsername = $data['currentUsername'];
 $newUsername     = $data['username'];
-$email           = $data['email'];
-$password        = isset($data['password']) ? trim($data['password']) : '';
+$oldPassword     = $data['oldPassword'];
 
 try {
-    if ($password !== '') {
-        $stmt = $db->prepare("UPDATE Users SET username = :username, email = :email, password = :password WHERE username = :currentUsername");
-        $result = $stmt->execute([
-            ':username'        => $newUsername,
-            ':email'           => $email,
-            ':password'        => $password,
-            ':currentUsername' => $currentUsername
-        ]);
-    } else {
-        $stmt = $db->prepare("UPDATE Users SET username = :username, email = :email WHERE username = :currentUsername");
-        $result = $stmt->execute([
-            ':username'        => $newUsername,
-            ':email'           => $email,
-            ':currentUsername' => $currentUsername
-        ]);
+    // Verify that the user exists and retrieve the hashed password
+    $stmt = $db->prepare("SELECT password FROM Users WHERE username = :currentUsername");
+    $stmt->execute([':currentUsername' => $currentUsername]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$user) {
+        echo json_encode(["success" => false, "error" => "User not found"]);
+        exit;
     }
+    
+    // Only proceed if the old password is valid
+    if (!password_verify($oldPassword, $user['password'])) {
+        echo json_encode(["success" => false, "error" => "Invalid old password"]);
+        exit;
+    }
+    
+    $stmt = $db->prepare("UPDATE Users SET username = :username WHERE username = :currentUsername");
+    $result = $stmt->execute([
+        ':username' => $newUsername,
+        ':currentUsername' => $currentUsername
+    ]);
 
     echo json_encode(["success" => $result]);
 } catch (PDOException $e) {

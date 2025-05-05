@@ -22,7 +22,9 @@
               <strong>Status:</strong> {{ report.status }}<br>
               <strong>Date:</strong> {{ report.date }}
             </p>
-            <button v-if="report.status === 'Open'" @click="updateReportStatus(report.reportId)">Mark as Resolved</button>
+            <button v-if="report.status === 'Open'" @click="updateReportStatus(report.reportId)">
+              Mark as Resolved
+            </button>
           </li>
         </ul>
         <button @click="closeResolveReportsModal">Close</button>
@@ -40,20 +42,11 @@ export default {
       reports: []
     }
   },
-  created() {
-    // Retrieve the stored user role (this example uses localStorage)
-    const userRole = localStorage.getItem('userRole');
-    // If the user is not a moderator, redirect to the homepage
-    if (userRole !== 'Moderator') {
-      this.$router.push('/');
-    }
-  },
+
   methods: {
-    // Placeholder method to launch news creation functionality
     createNews() {
       alert("Create News functionality placeholder");
     },
-    // Placeholder method to launch news editing interface
     editNews() {
       alert("Edit News functionality placeholder");
     },
@@ -67,8 +60,7 @@ export default {
     },
     async fetchPendingReports() {
       try {
-        // Use the endpoint with pending query parameter to retrieve pending reports.
-        const response = await fetch('/apiPHP/backend/api/getReports.php?pending=1');
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/getReports.php?pending=1');
         const data = await response.json();
         if (data.success) {
           this.reports = data.reports;
@@ -83,8 +75,8 @@ export default {
       try {
         const confirmUpdate = confirm("Mark report #" + reportId + " as resolved?");
         if (!confirmUpdate) return;
-        // POST to report.php with action "update" to change the status.
-        const response = await fetch('/apiPHP/backend/api/report.php', {
+        // POST to the report endpoint to update report status
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/report.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: "update", reportId, status: "Resolved" })

@@ -1,27 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../App.vue'
+import Layout from '../components/Layout.vue'
+import HomePage from '../components/HomePage.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: HomePage
-  },
-// {
-  //   path: '/game',
-  //   name: 'Game',
-  //   // Route reserved for the Godot web game component (implement as needed)
-  //   component: () => import('../views/GodotGame.vue')
-  // },
-  {
-    path: '/moderator',
-    name: 'Moderator',
-    component: () => import('../views/Moderator.vue')
+    component: Layout,
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: HomePage
+      },
+      {
+        path: 'moderator',
+        name: 'Moderator',
+        component: () => import('../views/Moderator.vue')
+      }
+    ]
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (to.hash) {
@@ -31,6 +32,13 @@ const router = createRouter({
     } else {
       return { top: 0 }
     }
+  }
+})
+
+router.beforeEach((to) => {
+  if (to.name === 'Moderator') {
+    const role = localStorage.getItem('userRole')
+    return role === 'Moderator' ? true : { path: '/' }
   }
 })
 

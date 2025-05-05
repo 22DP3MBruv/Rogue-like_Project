@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 0);
+error_reporting(0);
+
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -12,13 +15,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once '../config/database.php';
 require_once '../config/functions.php';
 
-// Retrieve optional query parameters:
-// 'q' for a search keyword and 'order' for the sort order (asc or desc)
+// Define send_json_response if it doesn't exist
+if (!function_exists('send_json_response')) {
+    function send_json_response($data, $status = 200) {
+        http_response_code($status);
+        echo json_encode($data);
+        exit;
+    }
+}
+
+// Retrieve optional query parameters: 'q' for search and 'order' for sort order (default DESC)
 $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 $order = (isset($_GET['order']) && strtolower($_GET['order']) === 'asc') ? 'ASC' : 'DESC';
 
 try {
-    // If a search term has been provided, filter the results by title and content
     if ($search !== '') {
         $sql = "SELECT articleId, title, content, publicationDate, authorId 
                 FROM Articles 
@@ -27,9 +37,7 @@ try {
         $stmt = $db->prepare($sql);
         $searchTerm = '%' . $search . '%';
         $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
-    } else
- {
-        // Otherwise, retrieve all news posts sorted by publicationDate
+    } else {
         $sql = "SELECT articleId, title, content, publicationDate, authorId 
                 FROM Articles 
                 ORDER BY publicationDate $order";
@@ -40,7 +48,6 @@ try {
     $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     send_json_response(['success' => true, 'articles' => $articles]);
-    
 } catch (PDOException $e) {
     send_json_response(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
 }
