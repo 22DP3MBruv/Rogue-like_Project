@@ -14,6 +14,7 @@ $sql_users = "CREATE TABLE IF NOT EXISTS Users (
 $sql_reports = "CREATE TABLE IF NOT EXISTS Reports (
     reportId INT AUTO_INCREMENT PRIMARY KEY,
     reporterId INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
     type ENUM('GameIssue', 'WebsiteIssue') NOT NULL,
     content TEXT NOT NULL,
     status ENUM('Open', 'Resolved') NOT NULL,

@@ -13,6 +13,7 @@ require_once __DIR__ . '/../config/database.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
+// For update action
 if (isset($data['action']) && $data['action'] === 'update') {
     if (!isset($data['reportId']) || !isset($data['status'])) {
         echo json_encode(["success" => false, "error" => "Missing required parameters"]);
@@ -34,13 +35,25 @@ if (isset($data['action']) && $data['action'] === 'update') {
     exit;
 }
 
-if (isset($data['type']) && isset($data['content'])) {
+// For creating a new report
+if (isset($data['title']) && isset($data['type']) && isset($data['content'])) {
+    if (!isset($data['reporterId']) || $data['reporterId'] <= 0) {
+        echo json_encode(["success" => false, "error" => "Missing or invalid reporterId"]);
+        exit;
+    }
+    $reporterId = $data['reporterId'];
+    $title      = $data['title'];
     $reportType = $data['type'];
-    $content = $data['content'];
-    $reporterId = $data['reporterId'] ?? 0;
+    $content    = $data['content'];
+
     try {
-        $stmt = $db->prepare("INSERT INTO Reports (reporterId, type, content, status) VALUES (:reporterId, :type, :content, 'Open')");
-        $stmt->execute([':reporterId' => $reporterId, ':type' => $reportType, ':content' => $content]);
+        $stmt = $db->prepare("INSERT INTO Reports (reporterId, title, type, content, status) VALUES (:reporterId, :title, :type, :content, 'Open')");
+        $stmt->execute([
+          ':reporterId' => $reporterId,
+          ':title'      => $title,
+          ':type'       => $reportType,
+          ':content'    => $content
+        ]);
         echo json_encode(["success" => true]);
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "error" => $e->getMessage()]);

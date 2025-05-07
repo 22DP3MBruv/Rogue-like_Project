@@ -51,7 +51,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
   background: linear-gradient(135deg, #ff9a00, #cc7000);
   color: #fff;
   margin-bottom: 1.5rem;

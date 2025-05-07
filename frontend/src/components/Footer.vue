@@ -16,11 +16,10 @@
       </div>
     </div>
 
-    <!-- Contact Us Modal (updated: no inputs, only displays email and phone) -->
+    <!-- Contact Us Modal -->
     <div v-if="showContactModal" class="modal-overlay" @click.self="closeContactModal">
       <div class="modal-content">
         <h2>Contact Us</h2>
-        <!-- Temporary contact details as placeholder -->
         <p><strong>Email:</strong> support@rvt.lv</p> 
         <p><strong>Phone:</strong> 11 111 111</p>
         <div class="modal-buttons">
@@ -29,16 +28,20 @@
       </div>
     </div>
 
-    <!-- Send Report modal-->
+    <!-- Send Report Modal -->
     <div v-if="showReportModal" class="modal-overlay" @click.self="closeReportModal">
       <div class="modal-content">
         <h2>Send a Report</h2>
         <form @submit.prevent="submitReport">
+          <label for="reportTitle">Report Title:</label>
+          <input id="reportTitle" v-model="reportData.title" type="text" placeholder="Short description" required />
+          
           <label for="reportType">Report Type:</label>
           <select id="reportType" v-model="reportData.type">
             <option value="GameIssue">Game Issue</option>
             <option value="WebsiteIssue">Website Issue</option>
           </select>
+
           <label for="reportContent">Content:</label>
           <textarea id="reportContent" v-model="reportData.content" placeholder="Describe the issue..." required></textarea>
           <div class="modal-buttons">
@@ -49,15 +52,31 @@
       </div>
     </div>
 
-<!-- My Reports Modal -->
+    <!-- My Reports Modal -->
     <div v-if="showMyReportsModal" class="modal-overlay" @click.self="closeMyReportsModal">
       <div class="modal-content">
         <h2>My Reports</h2>
-        <ul>
-          <li v-for="report in myReports" :key="report.reportId">
-            <strong>{{ report.type }}</strong> - {{ report.content }} ({{ report.status }})
-          </li>
-        </ul>
+        <div class="reports-container">
+          <div 
+            v-for="report in myReports" 
+            :key="report.reportId" 
+            class="report-card"
+            @click="toggleExpandReport(report.reportId)"
+            :class="{ expanded: isReportExpanded(report.reportId) }">
+            <div class="report-card-header">
+              <strong>{{ report.title }}</strong>
+              <span class="report-type">({{ report.type }})</span>
+            </div>
+            <div class="report-card-body">
+              <p>
+                {{ isReportExpanded(report.reportId)
+                  ? report.content
+                  : report.content.substring(0, 100) + (report.content.length > 100 ? '...' : '') }}
+              </p>
+              <button @click.stop="deleteReport(report.reportId)">Delete Report</button>
+            </div>
+          </div>
+        </div>
         <button @click="closeMyReportsModal">Close</button>
       </div>
     </div>
@@ -71,6 +90,11 @@ export default {
     isLoggedIn: {
       type: Boolean,
       default: false
+    },
+    reporterId: {
+      // Logged in user's id
+      type: Number,
+      default: 0
     }
   },
   data() {
@@ -80,10 +104,12 @@ export default {
       showReportModal: false,
       showMyReportsModal: false,
       reportData: {
+        title: '',
         type: 'GameIssue',
         content: ''
       },
-      myReports: []
+      myReports: [],
+      expandedReports: {}
     }
   },
   methods: {
@@ -104,14 +130,15 @@ export default {
     },
     closeReportModal() {
       this.showReportModal = false;
-      this.reportData = { type: 'GameIssue', content: '' };
+      this.reportData = { title: '', type: 'GameIssue', content: '' };
     },
     async submitReport() {
       try {
+        const payload = { ...this.reportData, reporterId: this.reporterId };
         const response = await fetch('/apiPHP/backend/api/report.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.reportData)
+          body: JSON.stringify(payload)
         });
         const data = await response.json();
         if (data.success) {
@@ -131,10 +158,11 @@ export default {
     closeMyReportsModal() {
       this.showMyReportsModal = false;
       this.myReports = [];
+      this.expandedReports = {};
     },
     async fetchMyReports() {
       try {
-        const response = await fetch('/apiPHP/backend/api/getReports.php');
+        const response = await fetch(`/apiPHP/backend/api/getReports.php?reporterId=${this.reporterId}`);
         const data = await response.json();
         if (data.success) {
           this.myReports = data.reports;
@@ -143,6 +171,32 @@ export default {
         }
       } catch (error) {
         console.error('Fetch reports error:', error);
+      }
+    },
+    toggleExpandReport(reportId) {
+      this.expandedReports[reportId] = !this.expandedReports[reportId];
+    },
+    isReportExpanded(reportId) {
+      return !!this.expandedReports[reportId];
+    },
+    async deleteReport(reportId) {
+      try {
+        const confirmDelete = confirm("Are you sure you want to delete this report?");
+        if (!confirmDelete) return;
+        const response = await fetch('/apiPHP/backend/api/deleteReport.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reportId })
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert("Report deleted successfully");
+          this.fetchMyReports();
+        } else {
+          alert("Error deleting report: " + data.error);
+        }
+      } catch (error) {
+        console.error("Delete report error:", error);
       }
     }
   }
@@ -153,7 +207,7 @@ export default {
 .footer {
   background: #1e1e1e;
   color: #e0e0e0;
-  padding: 1rem;
+  padding: 0.5rem;
   text-align: center;
   position: relative;
   bottom: 0;
@@ -194,9 +248,9 @@ export default {
   margin-top: 0;
   color: #ff9a00;
 }
-.modal-content textarea {
+.modal-content textarea,
+.modal-content input {
   width: 100%;
-  height: 100px;
   margin: 0.5rem 0;
   padding: 0.5rem;
   border: 1px solid #444;
@@ -221,5 +275,62 @@ export default {
 }
 .modal-buttons button:hover {
   background-color: #ff8800;
+}
+
+/* Reports Thumbnail Styles */
+.reports-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.report-card {
+  border: 1px solid #444;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #181818;
+  cursor: pointer;
+  transition: max-height 0.3s ease;
+  will-change: max-height;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  max-height: 80px; /* collapsed thumbnail height */
+}
+.report-card.expanded {
+  max-height: 300px; /* overall expanded height */
+}
+.report-card-header {
+  padding: 0.5rem 1rem;
+  background: #ff9a00;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Ensure title always appears at the top */
+}
+.report-card-body {
+  padding: 0.5rem 1rem;
+  color: #ccc;
+  transition: max-height 0.3s ease;
+  will-change: max-height;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.report-card.expanded .report-card-body {
+  max-height: 240px; /* fixed height for scrolling */
+  overflow-y: auto;
+}
+.report-card-body button {
+  background-color: #ff4d4d;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+.report-card-body button:hover {
+  background-color: #ff3333;
 }
 </style>

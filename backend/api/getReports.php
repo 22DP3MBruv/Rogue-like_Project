@@ -11,17 +11,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/database.php';
 
+$search = isset($_GET['q']) ? trim($_GET['q']) : '';
+$searchSQL = "";
+if ($search !== "") {
+    $searchSQL = " AND (r.title LIKE :search OR r.content LIKE :search)";
+}
+
 $pending = isset($_GET['pending']) && $_GET['pending'] == 1;
 
 if ($pending) {
     try {
-        $stmt = $db->prepare("
-            SELECT r.reportId, r.reporterId, r.type, r.content, r.status, r.date, u.username AS reporterName
+        $sql = "
+            SELECT r.reportId, r.reporterId, r.title, r.type, r.content, r.status, r.date, u.username AS reporterName
             FROM Reports r
             JOIN Users u ON r.reporterId = u.userId
-            WHERE r.status = 'Open'
+            WHERE r.status = 'Open' $searchSQL
             ORDER BY r.date DESC
-        ");
+        ";
+        $stmt = $db->prepare($sql);
+        if ($search !== "") {
+            $stmt->bindValue(':search', "%{$search}%", PDO::PARAM_STR);
+        }
         $stmt->execute();
         $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(["success" => true, "reports" => $reports]);
@@ -29,15 +39,25 @@ if ($pending) {
         echo json_encode(["success" => false, "error" => $e->getMessage()]);
     }
     exit;
-} else {
-    $reporterId = $_GET['reporterId'] ?? 0;
+} else if (isset($_GET['all']) && $_GET['all'] == 1) {
     try {
-        $stmt = $db->prepare("SELECT reportId, type, content, status, date FROM Reports WHERE reporterId = :reporterId ORDER BY date DESC");
-        $stmt->execute([':reporterId' => $reporterId]);
+        $sql = "
+            SELECT r.reportId, r.reporterId, r.title, r.type, r.content, r.status, r.date, u.username AS reporterName
+            FROM Reports r
+            JOIN Users u ON r.reporterId = u.userId
+            WHERE r.status = 'Open' $searchSQL
+            ORDER BY r.date DESC
+        ";
+        $stmt = $db->prepare($sql);
+        if ($search !== "") {
+            $stmt->bindValue(':search', "%{$search}%", PDO::PARAM_STR);
+        }
+        $stmt->execute();
         $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(["success" => true, "reports" => $reports]);
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "error" => $e->getMessage()]);
     }
+    exit;
 }
 ?>

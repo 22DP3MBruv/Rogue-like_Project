@@ -1,6 +1,6 @@
 <template>
   <div class="layout-container">
-    <!-- Header with ref to allow clicks on it to be ignored -->
+    <!-- Header -->
     <HeaderComponent
       ref="header"
       :isLoggedIn="isLoggedIn"
@@ -12,7 +12,7 @@
       @toggle-menu="toggleMenu"
     />
 
-    <!-- Nav Menu with a ref -->
+    <!-- Nav Menu -->
     <nav class="nav-menu" :class="{ active: isMenuOpen }" ref="navMenu">
       <ul>
         <li><router-link to="/">Home</router-link></li>
@@ -24,11 +24,13 @@
       </ul>
     </nav>
 
+    <!-- Main Content -->
     <main class="main-content">
       <router-view></router-view>
     </main>
 
-    <FooterComponent :isLoggedIn="isLoggedIn" />
+    <!-- Footer: Pass the reporterId from computed -->
+    <FooterComponent :isLoggedIn="isLoggedIn" :reporterId="reporterId" />
 
     <!-- Login Modal -->
     <div v-if="showLoginForm" class="modal-overlay" @click.self="closeLoginForm">
@@ -89,10 +91,6 @@
             <label for="account-username">New Username:</label>
             <input id="account-username" v-model="manageAccountData.username" type="text" required />
           </div>
-          <!-- <div class="form-group">
-            <label for="account-email">Email:</label>
-            <input id="account-email" v-model="manageAccountData.email" type="email" disabled />
-          </div> -->
           <div class="form-group">
             <label for="account-old-password">Current Password (required for changes):</label>
             <input id="account-old-password" v-model="manageAccountData.oldPassword" type="password" required />
@@ -103,7 +101,6 @@
           </div>
         </form>
         <div class="form-actions" style="margin-top: 1rem;">
-          <!-- Button to open the password update modal -->
           <button type="button" @click="openUpdatePasswordModal" style="background-color: #ff8800;">
             Change Password
           </button>
@@ -152,7 +149,6 @@
         </form>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -184,7 +180,6 @@ export default {
         password: '',
         moderator_key: ''
       },
-      // Now manageAccountData includes email (read-only) and requires oldPassword for changes.
       manageAccountData: {
         currentUsername: '',
         username: '',
@@ -203,18 +198,21 @@ export default {
     }
   },
   computed: {
+    // Returns the reporterId (logged in user's id), or 0 if not set
+    reporterId() {
+      return Number(localStorage.getItem('userId')) || 0;
+    },
     isModeratorEmail() {
       return this.registerData.email && this.registerData.email.includes('.mod@')
     }
   },
   created() {
-        const storedUsername = localStorage.getItem('username')
+    const storedUsername = localStorage.getItem('username')
     const storedRole = localStorage.getItem('userRole')
     const storedEmail = localStorage.getItem('userEmail') || ''
     if (storedUsername && storedRole) {
       this.username = storedUsername
       this.userRole = storedRole
-      // Set email in manage account modal (read-only)
       this.manageAccountData.email = storedEmail
       this.isLoggedIn = true
     }
@@ -259,7 +257,8 @@ export default {
           this.isLoggedIn = true
           this.username = data.username
           this.userRole = data.role
-                    localStorage.setItem('username', data.username)
+          localStorage.setItem('userId', data.userId)  // Store the reporterId
+          localStorage.setItem('username', data.username)
           localStorage.setItem('userRole', data.role)
           if (data.email) {
             localStorage.setItem('userEmail', data.email)
@@ -285,7 +284,8 @@ export default {
           this.isLoggedIn = true
           this.username = this.registerData.username
           this.userRole = data.role
-                    localStorage.setItem('username', this.registerData.username)
+          localStorage.setItem('userId', data.userId)  // Ensure your API returns userId upon registration
+          localStorage.setItem('username', this.registerData.username)
           localStorage.setItem('userRole', data.role)
           localStorage.setItem('userEmail', this.registerData.email)
           this.manageAccountData.email = this.registerData.email
@@ -298,11 +298,8 @@ export default {
       }
     },
     openManageAccountModal() {
-      // Populate manage account form with current info.
-      // Note: Email is read-only.
       this.manageAccountData.currentUsername = this.username
       this.manageAccountData.username = this.username
-      // Email already populated from localStorage.
       this.manageAccountData.oldPassword = ''
       this.showManageAccountModal = true
     },
@@ -315,7 +312,6 @@ export default {
         const payload = {
           currentUsername: this.manageAccountData.currentUsername,
           username: this.manageAccountData.username,
-          // Require the old password for any change
           oldPassword: this.manageAccountData.oldPassword
         }
         const response = await fetch('http://localhost/Rogue-like_Project/backend/api/updateAccount.php', {
@@ -337,7 +333,6 @@ export default {
       }
     },
     openUpdatePasswordModal() {
-      // Pre-fill the current username for updating password
       this.updatePasswordData.currentUsername = this.username
       this.updatePasswordData.oldPassword = ''
       this.updatePasswordData.newPassword = ''
@@ -366,7 +361,6 @@ export default {
       }
     },
     openDeleteAccountModal() {
-      // Pre-fill the deletion form with current username
       this.deleteAccountData.currentUsername = this.username
       this.deleteAccountData.oldPassword = ''
       this.showDeleteAccountModal = true
@@ -394,13 +388,11 @@ export default {
         console.error('Delete account error:', error)
       }
     },
-    openManageAccountOptions() {
-      this.openManageAccountModal()
-    },
     logout() {
       this.isLoggedIn = false
       this.username = ''
       this.userRole = ''
+      localStorage.removeItem('userId')
       localStorage.removeItem('username')
       localStorage.removeItem('userRole')
       localStorage.removeItem('userEmail')
@@ -408,9 +400,7 @@ export default {
     handleClickOutside(e) {
       const navMenu = this.$refs.navMenu
       const header = this.$refs.header ? this.$refs.header.$el : null
-      if (this.isMenuOpen &&
-          navMenu && !navMenu.contains(e.target) &&
-          header && !header.contains(e.target)) {
+      if (this.isMenuOpen && navMenu && !navMenu.contains(e.target) && header && !header.contains(e.target)) {
         this.isMenuOpen = false
       }
     }
@@ -454,7 +444,7 @@ export default {
   text-decoration: none;
 }
 
-/* Main content spacing */
+/* Main content */
 .main-content {
   flex: 1;
   padding: 2rem;

@@ -20,7 +20,7 @@ body {
 /* Header with dark background and orange accents */
 header {
     background: linear-gradient(135deg, #ff9a00, #cc7000);
-    padding: 1rem 2rem;
+    padding: 0.5rem 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     margin-bottom: 1.5rem;
 }
