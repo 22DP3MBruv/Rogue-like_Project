@@ -113,6 +113,9 @@
             <div class="report-card-header">
               <strong>{{ report.title }}</strong>
               <span class="report-type">({{ report.type }})</span>
+              <div class="report-user">
+                Submitted by: {{ report.reporterName }}
+              </div>
             </div>
             <div class="report-card-body">
               <p>
@@ -374,7 +377,7 @@ export default {
   padding-top: 2rem;
   z-index: 50;
 }
-/* Added scrolling for modal contents */
+/* With scrolling for modal contents */
 .modal-content {
   background: #121212;
   padding: 2rem;

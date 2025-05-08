@@ -29,7 +29,6 @@
       <router-view></router-view>
     </main>
 
-    <!-- Footer: Pass the reporterId from computed -->
     <FooterComponent :isLoggedIn="isLoggedIn" :reporterId="reporterId" />
 
     <!-- Login Modal -->
@@ -257,7 +256,7 @@ export default {
           this.isLoggedIn = true
           this.username = data.username
           this.userRole = data.role
-          localStorage.setItem('userId', data.userId)  // Store the reporterId
+          localStorage.setItem('userId', data.userId)
           localStorage.setItem('username', data.username)
           localStorage.setItem('userRole', data.role)
           if (data.email) {
@@ -284,7 +283,7 @@ export default {
           this.isLoggedIn = true
           this.username = this.registerData.username
           this.userRole = data.role
-          localStorage.setItem('userId', data.userId)  // Ensure your API returns userId upon registration
+          localStorage.setItem('userId', data.userId)
           localStorage.setItem('username', this.registerData.username)
           localStorage.setItem('userRole', data.role)
           localStorage.setItem('userEmail', this.registerData.email)

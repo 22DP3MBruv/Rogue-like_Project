@@ -12,8 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once '../config/database.php';
 
 // Read and log the raw POST data (for debugging)
-$rawData = file_get_contents('php://input');
-error_log("Raw input: " . $rawData);
+// $rawData = file_get_contents('php://input');
+// error_log("Raw input: " . $rawData);
 
 // Decode the JSON payload
 $data = json_decode($rawData, true);

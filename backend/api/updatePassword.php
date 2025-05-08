@@ -40,7 +40,6 @@ try {
         exit;
     }
 
-// Update the password – in production, hash the new password before storing it.
     $stmt2 = $db->prepare("UPDATE Users SET password = :newPassword WHERE username = :username");
     $result = $stmt2->execute([':newPassword' => $newPassword, ':username' => $currentUsername]);
 

@@ -78,7 +78,6 @@ export default {
         const data = await response.json();
         if (data.success) {
           this.newsPosts = data.articles;
-          // Expect backend to send totalPages in response
           this.totalPages = data.totalPages;
           // Reset expansion when new news are fetched
           this.expandedCards = {};

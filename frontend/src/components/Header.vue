@@ -61,7 +61,7 @@ export default {
   font-weight: bold;
 }
 .logo img {
-  max-height: 50px; /* Adjust as needed */
+  max-height: 50px;
 }
 
 .header-right {
