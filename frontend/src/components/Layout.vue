@@ -272,6 +272,16 @@ export default {
       }
     },
     async register() {
+      // Basic password length validation
+      if (this.registerData.password.length < 8) {
+        alert("Password must be at least 8 characters long.");
+        return;
+      }
+      // Basic username length validation
+      if (this.registerData.username.length < 5) {
+        alert("Username must be at least 5 characters long.");
+        return;
+      }
       try {
         const response = await fetch('http://localhost/Rogue-like_Project/backend/api/register.php', {
           method: 'POST',
