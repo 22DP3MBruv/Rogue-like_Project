@@ -66,6 +66,9 @@
             <div class="report-card-header">
               <strong>{{ report.title }}</strong>
               <span class="report-type">({{ report.type }})</span>
+              <div class="report-status">
+                Status: {{ report.status }}
+              </div>
             </div>
             <div class="report-card-body">
               <p>
@@ -332,5 +335,10 @@ export default {
 }
 .report-card-body button:hover {
   background-color: #ff3333;
+}
+.report-status {
+  font-size: 0.9rem;
+  color: #fff;
+  margin-left: 1rem;
 }
 </style>

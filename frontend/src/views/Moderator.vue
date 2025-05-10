@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <!-- Reports Modal with Thumbnails and Search -->
+    <!-- Reports Modal with Thumbnails, Search, and Sorting -->
     <div v-if="showReportsModal" class="modal-overlay" @click.self="closeReportsModal">
       <div class="modal-content">
         <h2>All User Reports</h2>
@@ -102,6 +102,14 @@
             v-model="reportsSearch" 
             @input="fetchAllReports" 
             placeholder="Search reports..." />
+        </div>
+        <!-- Sorting Control -->
+        <div class="reports-sort">
+          <label for="sortOrder">Sort by date:</label>
+          <select id="sortOrder" v-model="sortReportsOrder" @change="fetchAllReports">
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
+          </select>
         </div>
         <div class="reports-container">
           <div 
@@ -148,6 +156,7 @@ export default {
       showReportsModal: false,
       reports: [],
       reportsSearch: '', // for searching reports
+      sortReportsOrder: 'desc', // sort option property
       newsArticles: [],
       createNewsData: { title: '', content: '' },
       modifyNewsData: { articleId: null, title: '', content: '' },
@@ -281,7 +290,7 @@ export default {
       }
     },
 
-    // Reports Methods with Scrolling and Search
+    // Reports Methods with Scrolling, Search, and Sorting
     openReportsModal() {
       this.showReportsModal = true;
       this.fetchAllReports();
@@ -299,6 +308,7 @@ export default {
           const encodedQuery = encodeURIComponent(this.reportsSearch.trim());
           url += `&q=${encodedQuery}`;
         }
+        url += `&order=${this.sortReportsOrder}`; // pass the order parameter
         const response = await fetch(url);
         const data = await response.json();
         if (data.success) {
@@ -572,6 +582,21 @@ export default {
 .reports-search input {
   width: 100%;
   padding: 0.5rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #1e1e1e;
+  color: #fff;
+}
+
+/* Additional style for sorting control */
+.reports-sort {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.reports-sort select {
+  padding: 0.25rem 0.5rem;
   border: 1px solid #333;
   border-radius: 4px;
   background: #1e1e1e;

@@ -17,6 +17,11 @@ if ($search !== "") {
     $searchSQL = " AND (r.title LIKE :search OR r.content LIKE :search)";
 }
 
+$order = "DESC";
+if (isset($_GET['order']) && strtolower($_GET['order']) === "asc") {
+    $order = "ASC";
+}
+
 $pending = isset($_GET['pending']) && $_GET['pending'] == 1;
 
 if ($pending) {
@@ -26,7 +31,7 @@ if ($pending) {
             FROM Reports r
             JOIN Users u ON r.reporterId = u.userId
             WHERE r.status = 'Open' $searchSQL
-            ORDER BY r.date DESC
+            ORDER BY r.date $order
         ";
         $stmt = $db->prepare($sql);
         if ($search !== "") {
@@ -46,7 +51,7 @@ if ($pending) {
             FROM Reports r
             JOIN Users u ON r.reporterId = u.userId
             WHERE r.status = 'Open' $searchSQL
-            ORDER BY r.date DESC
+            ORDER BY r.date $order
         ";
         $stmt = $db->prepare($sql);
         if ($search !== "") {
