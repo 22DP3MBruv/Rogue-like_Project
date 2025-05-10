@@ -10,7 +10,7 @@ $sql_users = "CREATE TABLE IF NOT EXISTS Users (
     role ENUM('Player', 'Moderator') NOT NULL
 );";
 
-// Define Reports table
+// Define Reports table with a FULLTEXT index
 $sql_reports = "CREATE TABLE IF NOT EXISTS Reports (
     reportId INT AUTO_INCREMENT PRIMARY KEY,
     reporterId INT NOT NULL,

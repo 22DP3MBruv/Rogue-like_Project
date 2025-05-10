@@ -53,20 +53,22 @@ try {
     $totalArticles = $countResult ? (int)$countResult['total'] : 0;
     $totalPages = ceil($totalArticles / $limit);
 
-    // Build main query with limit & offset
+    // Build main query with JOIN for author
     if ($search !== '') {
-        $sql = "SELECT articleId, title, content, publicationDate, authorId 
-                FROM Articles 
-                WHERE MATCH(title, content) AGAINST(:search IN BOOLEAN MODE)
-                ORDER BY publicationDate $order
+        $sql = "SELECT a.articleId, a.title, a.content, a.publicationDate, a.authorId, u.username AS author
+                FROM Articles a
+                JOIN Users u ON a.authorId = u.userId
+                WHERE MATCH(a.title, a.content) AGAINST(:search IN BOOLEAN MODE)
+                ORDER BY a.publicationDate $order
                 LIMIT :limit OFFSET :offset";
         $stmt = $db->prepare($sql);
         $searchTerm = $search;
         $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
     } else {
-        $sql = "SELECT articleId, title, content, publicationDate, authorId 
-                FROM Articles 
-                ORDER BY publicationDate $order
+        $sql = "SELECT a.articleId, a.title, a.content, a.publicationDate, a.authorId, u.username AS author
+                FROM Articles a
+                JOIN Users u ON a.authorId = u.userId
+                ORDER BY a.publicationDate $order
                 LIMIT :limit OFFSET :offset";
         $stmt = $db->prepare($sql);
     }

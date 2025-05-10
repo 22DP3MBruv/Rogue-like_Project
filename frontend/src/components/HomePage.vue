@@ -19,7 +19,10 @@
           @click="toggleExpand(news.articleId)">
           <div class="news-card" :class="{ expanded: isExpanded(news.articleId) }">
             <div class="news-card-header">
-              <h3 class="news-title">{{ news.title }}</h3>
+              <div>
+                <h3 class="news-title">{{ news.title }}</h3>
+                <small class="news-author">by {{ news.author }}</small>
+              </div>
               <small class="news-date">{{ news.publicationDate }}</small>
             </div>
             <div class="news-card-body">
@@ -161,6 +164,10 @@ export default {
 .news-title {
   margin: 0;
   font-size: 1.2rem;
+}
+.news-author {
+  font-size: 0.9rem;
+  color: #ccc;
 }
 .news-date {
   font-size: 0.9rem;
