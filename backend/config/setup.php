@@ -20,6 +20,7 @@ $sql_reports = "CREATE TABLE IF NOT EXISTS Reports (
     status ENUM('Open', 'Resolved') NOT NULL,
     date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_Reporter FOREIGN KEY (reporterId) REFERENCES Users (userId)
+    FULLTEXT INDEX ft_search (title, content)
 );";
 
 // Define Articles table with a FULLTEXT index for fast searching by title and content.

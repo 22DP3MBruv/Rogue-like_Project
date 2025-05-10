@@ -40,9 +40,9 @@ $offset = ($page - 1) * $limit;
 try {
     // Build count query to calculate total pages
     if ($search !== '') {
-        $countSql = "SELECT COUNT(*) AS total FROM Articles WHERE title LIKE :search OR content LIKE :search";
+        $countSql = "SELECT COUNT(*) AS total FROM Articles WHERE MATCH(title, content) AGAINST(:search IN BOOLEAN MODE)";
         $countStmt = $db->prepare($countSql);
-        $searchTerm = "%{$search}%";
+        $searchTerm = $search;
         $countStmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
     } else {
         $countSql = "SELECT COUNT(*) AS total FROM Articles";
@@ -57,10 +57,11 @@ try {
     if ($search !== '') {
         $sql = "SELECT articleId, title, content, publicationDate, authorId 
                 FROM Articles 
-                WHERE title LIKE :search OR content LIKE :search 
+                WHERE MATCH(title, content) AGAINST(:search IN BOOLEAN MODE)
                 ORDER BY publicationDate $order
                 LIMIT :limit OFFSET :offset";
         $stmt = $db->prepare($sql);
+        $searchTerm = $search;
         $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
     } else {
         $sql = "SELECT articleId, title, content, publicationDate, authorId 

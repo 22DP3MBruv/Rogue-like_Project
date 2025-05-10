@@ -14,7 +14,7 @@ require_once __DIR__ . '/../config/database.php';
 $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 $searchSQL = "";
 if ($search !== "") {
-    $searchSQL = " AND (r.title LIKE :search OR r.content LIKE :search)";
+    $searchSQL = " AND MATCH(r.title, r.content) AGAINST(:search IN BOOLEAN MODE)";
 }
 
 $order = "DESC";
@@ -35,7 +35,7 @@ if ($pending) {
         ";
         $stmt = $db->prepare($sql);
         if ($search !== "") {
-            $stmt->bindValue(':search', "%{$search}%", PDO::PARAM_STR);
+            $stmt->bindValue(':search', $search, PDO::PARAM_STR);
         }
         $stmt->execute();
         $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -55,7 +55,7 @@ if ($pending) {
         ";
         $stmt = $db->prepare($sql);
         if ($search !== "") {
-            $stmt->bindValue(':search', "%{$search}%", PDO::PARAM_STR);
+            $stmt->bindValue(':search', $search, PDO::PARAM_STR);
         }
         $stmt->execute();
         $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
