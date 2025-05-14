@@ -47,9 +47,14 @@
 
     <!-- Game Section -->
     <section id="game-section" class="game-section">
-      <h2>Game</h2>
       <div class="game-container">
-        <h1>No game access</h1>
+        <h2>Game</h2>
+        <iframe
+        src="http://localhost/Rogue-like_Project\frontend\public\export\roguelikeSource.html"
+        width="960"
+        height="540"
+        frameborder="0">
+      </iframe>
       </div>  
     </section>
   </div>
@@ -113,6 +118,14 @@ export default {
 .game-section {
   margin-bottom: 1rem;
 }
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .news-controls {
   display: flex;
   justify-content: space-between;

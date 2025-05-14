@@ -1,0 +1,64 @@
+[gd_scene load_steps=8 format=3 uid="uid://csxj052c11dtn"]
+
+[ext_resource type="Script" uid="uid://jn3xnp5eh13f" path="res://scripts/main.gd" id="1_0wfyh"]
+[ext_resource type="Texture2D" uid="uid://c033itxx803q5" path="res://assets/square.jpg" id="2_sugp2"]
+[ext_resource type="Script" uid="uid://kwihdtvl12wo" path="res://scripts/camera_2d.gd" id="3_tbgi4"]
+[ext_resource type="Texture2D" uid="uid://bv86ijskh8g8t" path="res://assets/tile.jpg" id="5_o6xl0"]
+[ext_resource type="PackedScene" uid="uid://dje4m7sk4qh7b" path="res://scenes/PauseMenu.tscn" id="5_tbgi4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyhfs"]
+
+[sub_resource type="GDScript" id="GDScript_jyhfs"]
+script/source = "extends ParallaxBackground
+
+@export var texture_size := Vector2(1100, 1100)  # tile.png dimensions
+@onready var camera := get_tree().get_first_node_in_group(\"camera\")  # Assign group to camera
+
+func _process(_delta):
+	if not camera: return
+	
+	# Calculate wrapped camera position
+	var wrapped_x = wrapf(camera.global_position.x, 
+						-texture_size.x, 
+						texture_size.x)
+	
+	# Offset background to always show mirrored version ahead
+	scroll_offset = Vector2(
+		wrapped_x - texture_size.x * sign(camera.get_screen_center().x),
+		
+	)
+"
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_0wfyh")
+
+[node name="Player" type="Sprite2D" parent="."]
+texture = ExtResource("2_sugp2")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+limit_smoothed = true
+position_smoothing_enabled = true
+position_smoothing_speed = 2.0
+script = ExtResource("3_tbgi4")
+
+[node name="Area2D" type="Area2D" parent="Player"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Area2D"]
+shape = SubResource("RectangleShape2D_jyhfs")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+script = SubResource("GDScript_jyhfs")
+texture_size = Vector2(4125, 4125)
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+texture_repeat = 2
+motion_mirroring = Vector2(4125, 4125)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer"]
+texture_repeat = 2
+texture = ExtResource("5_o6xl0")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 4125, 4125)
+
+[node name="PauseMenu" parent="." instance=ExtResource("5_tbgi4")]
