@@ -50,7 +50,7 @@
       <div class="game-container">
         <h2>Game</h2>
         <iframe
-        src="http://localhost/Rogue-like_Project\frontend\public\export\roguelikeSource.html"
+        src="http://localhost/Rogue-like_Project\roguelikesource\export\roguelikeSource.html"
         width="960"
         height="540"
         frameborder="0">
