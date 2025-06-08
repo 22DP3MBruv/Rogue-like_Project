@@ -16,6 +16,7 @@ require_once '../config/database.php';
 // error_log("Raw input: " . $rawData);
 
 // Decode the JSON payload
+$rawData = file_get_contents('php://input');
 $data = json_decode($rawData, true);
 
 // Validate required fields
