@@ -138,17 +138,17 @@ export default {
     async submitReport() {
       try {
         const payload = { ...this.reportData, reporterId: this.reporterId };
-        const response = await fetch('/apiPHP/backend/api/report.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/report.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
         const data = await response.json();
         if (data.success) {
-          alert('Report submitted successfully');
-          this.closeReportModal();
+            alert('Report submitted successfully');
+            this.closeReportModal();
         } else {
-          alert('Error: ' + data.error);
+            alert('Error: ' + data.error);
         }
       } catch (error) {
         console.error('Report submission error:', error);
@@ -165,7 +165,7 @@ export default {
     },
     async fetchMyReports() {
       try {
-        const response = await fetch(`/apiPHP/backend/api/getReports.php?reporterId=${this.reporterId}`);
+        const response = await fetch(`http://localhost/Rogue-like_Project/backend/api/getReports.php?reporterId=${this.reporterId}`);
         const data = await response.json();
         if (data.success) {
           this.myReports = data.reports;
@@ -186,7 +186,7 @@ export default {
       try {
         const confirmDelete = confirm("Are you sure you want to delete this report?");
         if (!confirmDelete) return;
-        const response = await fetch('/apiPHP/backend/api/deleteReport.php', {
+        const response = await fetch('http://localhost/Rogue-like_Project/backend/api/deleteReport.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reportId })

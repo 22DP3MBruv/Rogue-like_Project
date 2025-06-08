@@ -36,7 +36,7 @@ try {
     if ($user && password_verify($data['password'], $user['password'])) {
         echo json_encode([
             'success'   => true,
-            'user_id'   => $user['userId'],
+            'userId'   => $user['userId'],
             'username'  => $user['username'],
             'role'      => $user['role']
         ]);

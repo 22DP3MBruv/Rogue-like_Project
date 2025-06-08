@@ -64,5 +64,29 @@ if ($pending) {
         echo json_encode(["success" => false, "error" => $e->getMessage()]);
     }
     exit;
+} else if (isset($_GET['reporterId']) && $_GET['reporterId'] != 0) {
+    try {
+        $reporterId = $_GET['reporterId'];
+        $sql = "
+            SELECT r.reportId, r.reporterId, r.title, r.type, r.content, r.status, r.date, u.username AS reporterName
+            FROM Reports r
+            JOIN Users u ON r.reporterId = u.userId
+            WHERE r.reporterId = :reporterId $searchSQL
+            ORDER BY r.date $order
+        ";
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':reporterId', $reporterId, PDO::PARAM_INT);
+        if ($search !== "") {
+            $stmt->bindValue(':search', $search, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(["success" => true, "reports" => $reports]);
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "error" => $e->getMessage()]);
+    }
+    exit;
 }
+
+echo json_encode(["success" => false, "error" => "No valid query parameter provided"]);
 ?>

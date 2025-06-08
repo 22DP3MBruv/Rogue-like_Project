@@ -164,6 +164,7 @@ export default {
       isLoggedIn: false,
       username: '',
       userRole: '',
+      userId: Number(localStorage.getItem('userId')) || 0,
       showLoginForm: false,
       showRegisterForm: false,
       showManageAccountModal: false,
@@ -197,12 +198,11 @@ export default {
     }
   },
   computed: {
-    // Returns the reporterId (logged in user's id), or 0 if not set
     reporterId() {
-      return Number(localStorage.getItem('userId')) || 0;
+      return this.userId;
     },
     isModeratorEmail() {
-      return this.registerData.email && this.registerData.email.includes('.mod@')
+      return this.registerData.email && this.registerData.email.includes('.mod@');
     }
   },
   created() {
@@ -256,6 +256,7 @@ export default {
           this.isLoggedIn = true
           this.username = data.username
           this.userRole = data.role
+          this.userId = data.userId  // Update reactive property
           localStorage.setItem('userId', data.userId)
           localStorage.setItem('username', data.username)
           localStorage.setItem('userRole', data.role)
