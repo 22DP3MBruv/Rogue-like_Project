@@ -79,16 +79,3 @@ A prospective 2D game inspired by "Vampire Survivors" developed with Godot, PHP,
 - **Scenes & Scripts:**  
   Edit gameplay and scenes (e.g., `project.godot`, `scenes/player.gd`) using Godot Engine.
 
----
-
-## Extra information
-
-- **Authentication:**  
-  After logging in via the provided Vue modals, you can access additional game or content features.
-- **API Administration:**  
-  Use XAMPP’s admin panel (phpMyAdmin) to manage the database if needed.
-- **Deployment:**  
-  Ensure that your PHP API and Vue frontend are correctly configured for production use when deploying.
-
-Happy coding!
-
